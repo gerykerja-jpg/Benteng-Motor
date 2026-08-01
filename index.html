@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>MobilKu — Manajemen Jual-Beli Mobil</title>
+<style>
+:root{
+  --bg:#0b1220; --bg2:#0f172a; --panel:#151f34; --panel2:#1c2942; --line:#26334d;
+  --text:#e8eef7; --muted:#93a2bd; --accent:#38bdf8; --accent2:#0ea5e9; --accentText:#04202e;
+  --green:#22c55e; --greenBg:#0f2e1d; --red:#f87171; --redBg:#3a1720;
+  --amber:#fbbf24; --violet:#a78bfa; --pink:#f472b6; --shadow:0 10px 40px rgba(0,0,0,.45);
+  --r:16px;
+}
+[data-theme="light"]{
+  --bg:#eef2f7; --bg2:#f6f8fb; --panel:#ffffff; --panel2:#f1f5fa; --line:#e2e8f0;
+  --text:#0f1e33; --muted:#5b6b83; --accent:#0284c7; --accent2:#0ea5e9; --accentText:#ffffff;
+  --green:#16a34a; --greenBg:#dcfce7; --red:#dc2626; --redBg:#fee2e2;
+  --amber:#d97706; --violet:#7c3aed; --pink:#db2777; --shadow:0 10px 30px rgba(15,30,51,.12);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased}
+.app{display:flex;min-height:100vh}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:20px}
+
+/* ===== SIDEBAR ===== */
+.sidebar{width:248px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;flex-shrink:0;transition:.2s}
+.brand{padding:20px 20px 14px;display:flex;align-items:center;gap:11px}
+.brand .logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#0ea5e9,#6366f1);display:grid;place-items:center;font-size:20px;box-shadow:0 6px 18px rgba(14,165,233,.4)}
+.brand b{font-size:16px;letter-spacing:.3px;display:block}
+.brand small{color:var(--muted);font-size:11px}
+.nav{padding:8px;display:flex;flex-direction:column;gap:2px;flex:1;overflow:auto}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;color:var(--muted);font-weight:600;font-size:13.5px;transition:.13s;cursor:pointer}
+.nav a .ic{font-size:17px;width:22px;text-align:center}
+.nav a:hover{background:var(--panel2);color:var(--text)}
+.nav a.active{background:linear-gradient(120deg,var(--accent2),#6366f1);color:#fff;box-shadow:0 6px 16px rgba(14,165,233,.35)}
+.nav .sec{color:var(--muted);font-size:10px;letter-spacing:1.5px;padding:14px 16px 6px;text-transform:uppercase;font-weight:700;opacity:.7}
+.side-foot{padding:14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.hamb{display:none}
+
+/* ===== MAIN ===== */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar h1{font-size:19px;margin:0;font-weight:800;letter-spacing:.2px}
+.topbar .sub{color:var(--muted);font-size:12px}
+.topbar .spacer{flex:1}
+.view{padding:22px 24px 60px;max-width:1480px;width:100%;margin:0 auto}
+
+/* ===== BUTTONS / INPUTS ===== */
+.btn{background:var(--panel2);color:var(--text);border:1px solid var(--line);padding:9px 15px;border-radius:11px;cursor:pointer;font-size:13px;font-weight:700;transition:.14s;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-family:inherit}
+.btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(120deg,var(--accent2),#6366f1);border:none;color:#fff;box-shadow:0 6px 16px rgba(14,165,233,.32)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:9px}
+.btn.danger{color:var(--red)} .btn.danger:hover{background:var(--redBg);border-color:var(--red)}
+.btn.icon{padding:8px 10px}
+select,input,textarea{background:var(--bg2);border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:10px;font-size:13.5px;font-family:inherit;width:100%}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;display:block;margin-bottom:5px}
+
+/* ===== CARDS / KPI ===== */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:15px;margin-bottom:22px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:17px 18px;position:relative;overflow:hidden}
+.kpi::after{content:"";position:absolute;right:-24px;top:-24px;width:80px;height:80px;border-radius:50%;opacity:.14;background:var(--accent)}
+.kpi.g::after{background:var(--green)} .kpi.v::after{background:var(--violet)} .kpi.a::after{background:var(--amber)} .kpi.p::after{background:var(--pink)}
+.kpi .lab{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+.kpi .val{font-size:23px;font-weight:800;margin-top:7px;letter-spacing:-.3px}
+.kpi .hint{color:var(--muted);font-size:11.5px;margin-top:5px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.panel-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.panel-h h3{margin:0;font-size:15px;font-weight:800}
+.panel-h .spacer{flex:1}
+.grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-bottom:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:1000px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* ===== TABLE ===== */
+.tablewrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:auto}
+table{border-collapse:collapse;width:100%}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;font-size:13px}
+th{background:var(--panel2);color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;font-weight:800;position:sticky;top:0;cursor:pointer;user-select:none}
+tbody tr{transition:.1s}
+tbody tr:hover{background:var(--panel2)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:3px 11px;border-radius:999px;font-size:11px;font-weight:800}
+.pill.stok{background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--accent)}
+.pill.jual{background:var(--greenBg);color:var(--green)}
+.pill.proses{background:color-mix(in srgb,var(--amber) 24%,transparent);color:var(--amber)}
+.pos{color:var(--green);font-weight:800}.neg{color:var(--red);font-weight:800}
+.muted{color:var(--muted)}
+.mini{font-size:11px;color:var(--muted)}
+.empty{padding:54px 20px;text-align:center;color:var(--muted)}
+.empty .big{font-size:40px;margin-bottom:10px}
+.rowact{display:flex;gap:6px}
+.avatar{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-weight:800;color:#fff;flex-shrink:0}
+
+/* toolbar */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:15px}
+.toolbar .grow{flex:1;min-width:180px;max-width:320px}
+.seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{background:transparent;border:none;color:var(--muted);padding:7px 15px;cursor:pointer;font-size:13px;font-weight:700;border-radius:8px;font-family:inherit}
+.seg button.active{background:var(--panel);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+[data-theme="light"] .seg button.active{background:#fff}
+
+/* ===== MODAL ===== */
+.overlay{position:fixed;inset:0;background:rgba(3,7,18,.68);display:none;align-items:flex-start;justify-content:center;padding:26px 14px;overflow:auto;z-index:80;backdrop-filter:blur(3px)}
+.overlay.show{display:flex;animation:fade .15s}
+@keyframes fade{from{opacity:0}}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:20px;width:100%;max-width:880px;box-shadow:var(--shadow);animation:pop .18s}
+@keyframes pop{from{transform:translateY(12px) scale(.98);opacity:0}}
+.modal-h{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.modal-h h2{margin:0;font-size:17px}
+.modal-b{padding:22px 24px;max-height:70vh;overflow:auto}
+.modal-f{padding:16px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.fgrid .full{grid-column:1/-1}.fgrid .sp2{grid-column:span 2}
+.fsec{grid-column:1/-1;font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.7px;text-transform:uppercase;border-top:1px dashed var(--line);padding-top:13px;margin-top:3px}
+.fsec:first-child{border-top:none;padding-top:0;margin-top:0}
+.money-hint{font-size:11px;color:var(--green);min-height:13px;margin-top:3px;font-weight:600}
+@media(max-width:680px){.fgrid{grid-template-columns:1fr}.fgrid .sp2{grid-column:auto}}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(24px);background:linear-gradient(120deg,var(--accent2),#6366f1);color:#fff;padding:13px 22px;border-radius:12px;font-weight:700;opacity:0;transition:.28s;z-index:200;box-shadow:var(--shadow);pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:linear-gradient(120deg,#ef4444,#b91c1c)}
+
+/* progress bar (ownership) */
+.bar{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:99px}
+
+/* chart */
+.legend{display:flex;flex-direction:column;gap:9px}
+.legend .li{display:flex;align-items:center;gap:9px;font-size:12.5px}
+.legend .dot{width:11px;height:11px;border-radius:4px;flex-shrink:0}
+.legend .li .v{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* print */
+@media print{
+  .sidebar,.topbar,.no-print{display:none!important}
+  .app,.main,.view{display:block;padding:0;margin:0;max-width:none}
+  body{background:#fff;color:#000}
+  .panel,.tablewrap,.kpi{border-color:#ccc;box-shadow:none}
+  #printArea{display:block!important}
+}
+#printArea{display:none}
+
+@media(max-width:860px){
+  .sidebar{position:fixed;left:0;top:0;z-index:90;transform:translateX(-100%);box-shadow:var(--shadow)}
+  .sidebar.open{transform:none}
+  .hamb{display:inline-flex}
+  .backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:85}
+  .backdrop.show{display:block}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">🚗</div>
+      <div><b id="brandName">MobilKu</b><small>Manajemen Jual-Beli</small></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">💾 Tersimpan otomatis di perangkat ini.<br>Rutin lakukan <b>Backup</b> di Pengaturan.<br><span style="opacity:.6">versi 4 • jual/leasing</span></div>
+  </aside>
+  <div class="backdrop" id="backdrop" onclick="toggleSidebar(false)"></div>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="btn icon hamb" onclick="toggleSidebar()">☰</button>
+      <div><h1 id="pageTitle">Dashboard</h1><div class="sub" id="pageSub"></div></div>
+      <div class="spacer"></div>
+      <div id="topActions" style="display:flex;gap:10px;flex-wrap:wrap"></div>
+      <button class="btn icon" onclick="toggleTheme()" title="Ganti tema">🌓</button>
+    </div>
+    <div class="view" id="view"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+<div id="printArea"></div>
+
+<script>
+"use strict";
+/*=========================================================
+  MobilKu — aplikasi manajemen jual-beli mobil (modal patungan)
+  Single-file, offline, data di localStorage.
+=========================================================*/
+const KEY='mobilku_db_v4', OLDKEY='dataMobilApp_v1';
+let DB;
+let _seq=0;
+const uid=p=>(p||'x')+Date.now().toString(36)+(_seq++).toString(36)+Math.floor(performance.now()).toString(36);
+
+/* ---------- number / date helpers ---------- */
+const N=v=>{ if(typeof v==='number')return isNaN(v)?0:v; v=parseFloat(String(v==null?'':v).replace(/[^\d.-]/g,'')); return isNaN(v)?0:v; };
+const moneyN=v=>{ if(typeof v==='number')return isNaN(v)?0:v; const s=String(v==null?'':v),negative=s.includes('-'); const digits=s.replace(/\D/g,''); return digits?(negative?-1:1)*Number(digits):0; };
+const rp=v=>'Rp '+Math.round(N(v)).toLocaleString('id-ID');
+const rpShort=v=>{v=N(v);const s=v<0?'-':'';v=Math.abs(v);if(v>=1e9)return s+'Rp '+(v/1e9).toFixed(v>=1e10?1:2)+' M';if(v>=1e6)return s+'Rp '+(v/1e6).toFixed(v>=1e8?0:1)+' Jt';if(v>=1e3)return s+'Rp '+Math.round(v/1e3)+' Rb';return s+'Rp '+v;};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+function fmtDate(s){ if(!s)return ''; const d=new Date(s); if(isNaN(d))return esc(s); return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtDateShort(s){ if(!s)return ''; const d=new Date(s); if(isNaN(d))return esc(s); return d.toLocaleDateString('id-ID',{day:'2-digit',month:'2-digit',year:'2-digit'}); }
+const todayISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const COLORS=['#38bdf8','#a78bfa','#22c55e','#fbbf24','#f472b6','#f87171','#34d399','#60a5fa','#c084fc','#fb923c'];
+const colorFor=s=>{let h=0;s=String(s||'?');for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return COLORS[h%COLORS.length];};
+const initials=s=>{s=String(s||'?').trim();const p=s.split(/\s+/);return((p[0]||'?')[0]+(p[1]?p[1][0]:'')).toUpperCase();};
+const PRODUCT_BY_NAME={AVANZA:'Toyota',INNOVA:'Toyota',YARIS:'Toyota',AGYA:'Toyota',CALYA:'Toyota',RUSH:'Toyota',FORTUNER:'Toyota',BRIO:'Honda',JAZZ:'Honda',MOBILIO:'Honda','BR-V':'Honda','HR-V':'Honda','CR-V':'Honda',XENIA:'Daihatsu',AYLA:'Daihatsu',TERIOS:'Daihatsu',SIGRA:'Daihatsu',ERTIGA:'Suzuki',XL7:'Suzuki',CARRY:'Suzuki',EXPANDER:'Mitsubishi',XPANDER:'Mitsubishi','PAJERO SPORT':'Mitsubishi',LIVINA:'Nissan',SERENA:'Nissan',ALMAZ:'Wuling',CONFERO:'Wuling'};
+const carTitle=c=>[c.produk,c.nama,c.type,c.transmisi].filter(Boolean).join(' ');
+
+/* ---------- persistence ---------- */
+function blankDB(){
+  return {
+    meta:{bisnis:'MobilKu', zakatRate:2.5, theme:'dark', ownerName:'Owner', defaultBagiPct:50, modalOwner:0},
+    periodes:[], cars:[], investors:[], capitalTx:[], accounts:[], cashTx:[], distributions:[]
+  };
+}
+function seedAccounts(){ return []; }
+function seedInvestors(){ return []; }
+function seedCarsJan(){ return []; }
+function migrateOld(){
+  try{
+    const raw=localStorage.getItem(OLDKEY); if(!raw)return null;
+    const old=JSON.parse(raw); if(!old||!old.cars)return null;
+    const db=blankDB();
+    db.periodes=old.periodes&&old.periodes.length?old.periodes.slice():[...new Set(old.cars.map(c=>c.periode))];
+    db.cars=old.cars.map(c=>Object.assign({akunBeli:'',akunJual:'',repairs:[],biayaLain:[],pemodalId:'',bagiPct:50,metodeJual:'',leasingStatus:''},c,{id:c.id||uid('c')}));
+    db.accounts=seedAccounts();
+    return db;
+  }catch(e){ return null; }
+}
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw){ DB=JSON.parse(raw); }
+    else {
+      // muat data patokan (sesuai New Microsoft Excel Worksheet.xlsx)
+      DB=blankDB(); DB.meta.modalOwner=500000000; DB.periodes=['Januari 2026']; DB.cars=seedCarsJan(); DB.accounts=seedAccounts(); DB.investors=seedInvestors();
+      save();
+    }
+  }catch(e){ DB=blankDB(); }
+  // integrity defaults
+  const b=blankDB(); for(const k in b) if(DB[k]==null) DB[k]=b[k];
+  if(!DB.meta) DB.meta=b.meta; for(const k in b.meta) if(DB.meta[k]==null) DB.meta[k]=b.meta[k];
+  if(DB.meta.modalOwner==null) DB.meta.modalOwner=0;
+  if(!DB.periodes.length) DB.periodes=[...new Set(DB.cars.map(c=>c.periode))].filter(Boolean);
+  if(!DB.periodes.length) DB.periodes=['Januari 2026'];
+  DB.cars.forEach(c=>{ if(!Array.isArray(c.repairs)) c.repairs=[]; if(!Array.isArray(c.biayaLain)) c.biayaLain=[]; if(c.produk==null)c.produk=PRODUCT_BY_NAME[String(c.nama||'').toUpperCase()]||''; if(c.transmisi==null)c.transmisi=''; if(c.pemodalId==null)c.pemodalId=''; if(c.modalInvestor==null)c.modalInvestor=c.pemodalId?N(c.hargaBeli):0; if(c.bagiPct==null)c.bagiPct=DB.meta.defaultBagiPct; if(c.bagiRp==null)c.bagiRp=0; if(c.metodeJual==null)c.metodeJual=''; if(c.leasingStatus==null)c.leasingStatus=''; });
+}
+const save=()=>{ try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast('Gagal menyimpan: penyimpanan penuh',true);} };
+
+/* ---------- derived ---------- */
+function carStatus(c){
+  if(c.metodeJual==='cash') return (N(c.hargaJual)>0||c.tglJual)?'terjual':'stok';
+  if(c.metodeJual==='leasing'){
+    if(c.leasingStatus==='cair') return 'terjual';
+    if(c.leasingStatus==='proses') return 'proses';
+    return 'stok'; // ditolak / belum
+  }
+  if(c.tglJual||N(c.hargaJual)>0||N(c.jualLeasing)>0) return 'terjual'; // data lama
+  return 'stok';
+}
+const isSold=c=>carStatus(c)==='terjual';
+const isProses=c=>carStatus(c)==='proses';
+const isStok=c=>carStatus(c)==='stok';
+const STATUSLABEL={stok:'STOK',proses:'PROSES LEASING',terjual:'TERJUAL'};
+function saleValue(c){
+  if(c.metodeJual==='leasing') return N(c.dpMasuk)+N(c.nilaiCair)+N(c.refundLeasing);
+  return N(c.hargaJual)||N(c.jualLeasing);
+}
+const repTotal=c=>(c.repairs||[]).reduce((s,r)=>s+N(r.biaya)+N(r.ongkos),0);
+const biayaLainTotal=c=>(c.biayaLain||[]).reduce((s,b)=>s+N(b.jumlah),0);
+const labaAuto=c=>saleValue(c)-N(c.hargaBeli)-N(c.komisiBeli)-N(c.komisiJual)-repTotal(c)-biayaLainTotal(c);
+const invName=id=>{const i=DB.investors.find(x=>x.id===id);return i?i.nama:'(?)';};
+const ownerName=()=>DB.meta.ownerName||'Owner';
+const carInvestorCapital=c=>c.pemodalId?Math.min(N(c.hargaBeli),N(c.modalInvestor)):0;
+const carOwnerCapital=c=>Math.max(0,N(c.hargaBeli)-carInvestorCapital(c));
+const carInvestorPct=c=>N(c.hargaBeli)>0?carInvestorCapital(c)/N(c.hargaBeli)*100:0;
+const carFundingLabel=c=>c.pemodalId?invName(c.pemodalId)+' '+rpShort(carInvestorCapital(c))+' + '+ownerName()+' '+rpShort(carOwnerCapital(c)):ownerName()+' '+rpShort(N(c.hargaBeli));
+const carInvestorShare=c=>{if(!c.pemodalId)return 0;if(N(c.bagiRp)>0)return N(c.bagiRp);return Math.round(N(c.laba)*carInvestorPct(c)/100);};
+const carOwnerShare=c=>c.pemodalId?N(c.laba)-carInvestorShare(c):N(c.laba);
+function invStats(id){ const cars=DB.cars.filter(c=>c.pemodalId===id); const stok=cars.filter(c=>!isSold(c)),sold=cars.filter(isSold);
+  return {cars,stok,sold,modalTied:stok.reduce((s,c)=>s+carInvestorCapital(c),0),laba:sold.reduce((s,c)=>s+N(c.laba),0),share:sold.reduce((s,c)=>s+carInvestorShare(c),0)}; }
+function ownerStats(){ const cars=DB.cars.filter(c=>carOwnerCapital(c)>0); const stok=cars.filter(c=>!isSold(c)),sold=DB.cars.filter(c=>!c.pemodalId&&isSold(c));
+  const shareFromInv=DB.cars.filter(c=>c.pemodalId&&isSold(c)).reduce((s,c)=>s+carOwnerShare(c),0);
+  const labaOwn=sold.reduce((s,c)=>s+N(c.laba),0);
+  const modalTied=stok.reduce((s,c)=>s+carOwnerCapital(c),0);
+  const modal=N(DB.meta.modalOwner);
+  return {cars,stok,sold,modalTied,modal,sisaUang:modal-modalTied,labaOwn,shareFromInv,totalEarn:labaOwn+shareFromInv}; }
+const modalOwner=()=>N(DB.meta.modalOwner);
+function invCashStats(id){ const tx=DB.capitalTx.filter(t=>t.investorId===id),masuk=tx.filter(t=>t.tipe==='setor').reduce((s,t)=>s+N(t.jumlah),0),keluar=tx.filter(t=>t.tipe==='tarik').reduce((s,t)=>s+N(t.jumlah),0),keluarDanaLuar=tx.filter(t=>t.tipe==='tarik').reduce((s,t)=>s+(t.danaLuar==null?N(t.jumlah):N(t.danaLuar)),0); return {tx,masuk,keluar,keluarDanaLuar,saldo:Math.max(0,masuk-keluarDanaLuar)}; }
+function invPrincipalOutstanding(id){ const total=DB.cars.filter(c=>c.pemodalId===id).reduce((s,c)=>s+carInvestorCapital(c),0); return Math.max(0,total-invPaid(id).modal); }
+const invWithdrawable=id=>{const cash=invCashStats(id),payout=invPayout(id);return cash.saldo+invPrincipalOutstanding(id)+payout.hasilDue;};
+const modalInvestor=()=>DB.investors.reduce((sum,i)=>sum+invPrincipalOutstanding(i.id)+invCashStats(i.id).saldo,0);
+const uangDiMobil=()=>DB.cars.filter(c=>!isSold(c)).reduce((s,c)=>s+N(c.hargaBeli),0);
+function invPaid(id){ let modal=0,hasil=0; DB.capitalTx.forEach(t=>{if(t.investorId===id&&t.tipe==='tarik'){modal+=N(t.modalKembali);hasil+=N(t.hasil);}}); DB.distributions.forEach(d=>(d.items||[]).forEach(it=>{ if(it.investorId!==id)return; modal+=N(it.modalKembali); hasil+=it.hasil==null?N(it.jumlah):N(it.hasil); })); return {modal,hasil}; }
+const invProfit=id=>invPaid(id).hasil;
+function invPayout(id){ const s=invStats(id),paid=invPaid(id); const modalTotal=s.sold.reduce((sum,c)=>sum+carInvestorCapital(c),0);
+  const modalDue=Math.max(0,modalTotal-paid.modal),hasilDue=Math.max(0,s.share-paid.hasil);
+  return {modalTotal,modalPaid:paid.modal,modalDue,hasilTotal:s.share,hasilPaid:paid.hasil,hasilDue,totalDue:modalDue+hasilDue}; }
+function investorFlows(){
+  const out=[];
+  DB.capitalTx.forEach(t=>out.push({tanggal:t.tanggal,investorId:t.investorId,jenis:t.tipe==='setor'?'Uang masuk di luar beli mobil':'Pengambilan uang',mobil:'',metode:t.metodeBayar||'',masuk:t.tipe==='setor'?N(t.jumlah):0,keluar:t.tipe==='tarik'?N(t.jumlah):0,ket:t.ket||''}));
+  DB.cars.forEach(c=>{const modal=carInvestorCapital(c);if(modal>0)out.push({tanggal:c.tglBeli,investorId:c.pemodalId,jenis:'Modal saat beli mobil',mobil:carTitle(c),metode:'',masuk:modal,keluar:0,ket:''});});
+  DB.distributions.forEach(d=>(d.items||[]).forEach(it=>{if(N(it.jumlah)>0)out.push({tanggal:d.tanggal,investorId:it.investorId,jenis:N(it.modalKembali)>0?'Pengembalian modal + laba':'Pembayaran laba',mobil:'',metode:d.metodeBayar||'',masuk:0,keluar:N(it.jumlah),ket:d.ket||''});}));
+  return out.sort((a,b)=>(b.tanggal||'').localeCompare(a.tanggal||''));
+}
+const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function periodFromDate(value){ const d=new Date(value); return isNaN(d)?'':MONTHS[d.getMonth()]+' '+d.getFullYear(); }
+function periodBounds(per){ const m=/^(\S+)\s+(\d{4})$/.exec(String(per||'')),month=m?MONTHS.indexOf(m[1]):-1; if(month<0)return null;
+  const year=N(m[2]); return {start:new Date(year,month,1),end:new Date(year,month+1,0,23,59,59,999),key:year*12+month}; }
+function carSaleDate(c){ return c.metodeJual==='leasing'?(c.tglCair||c.tglJual):c.tglJual; }
+function dateInPeriod(value,bounds){ const d=new Date(value); return !isNaN(d)&&d>=bounds.start&&d<=bounds.end; }
+function carBoughtBy(c,bounds){ const d=new Date(c.tglBeli); if(!isNaN(d))return d<=bounds.end; const old=periodBounds(c.periode); return old?old.key<=bounds.key:c.periode===MONTHS[bounds.start.getMonth()]+' '+bounds.start.getFullYear(); }
+function carStatusInPeriod(c,per){ const bounds=periodBounds(per); if(!bounds)return carStatus(c); const sale=new Date(carSaleDate(c));
+  if(!isNaN(sale)&&sale<=bounds.end)return 'terjual';
+  const apply=new Date(c.tglPengajuan),cair=new Date(c.tglCair);
+  if(c.metodeJual==='leasing'&&!isNaN(apply)&&apply<=bounds.end&&(isNaN(cair)||cair>bounds.end))return 'proses';
+  return 'stok'; }
+function syncCalendarPeriods(){ const dates=[todayISO()]; DB.cars.forEach(c=>{ if(c.tglBeli)dates.push(c.tglBeli); if(carSaleDate(c))dates.push(carSaleDate(c)); });
+  const keys=DB.periodes.map(periodBounds).filter(Boolean).map(x=>x.key); dates.forEach(v=>{const d=new Date(v);if(!isNaN(d))keys.push(d.getFullYear()*12+d.getMonth());});
+  if(!keys.length)return; const first=Math.min(...keys),last=Math.max(...keys); DB.periodes=[];
+  for(let key=first;key<=last;key++){ const year=Math.floor(key/12),month=key%12; DB.periodes.push(MONTHS[month]+' '+year); }
+}
+function periodStats(per){
+  const bounds=periodBounds(per);
+  if(!bounds){ const cs=DB.cars.filter(c=>c.periode===per),stok=cs.filter(isStok),proses=cs.filter(isProses),jual=cs.filter(isSold),unsold=cs.filter(c=>!isSold(c));
+    return {cars:cs,stok,proses,jual,unsold,modalStok:unsold.reduce((s,c)=>s+N(c.hargaBeli),0),omzet:jual.reduce((s,c)=>s+saleValue(c),0),laba:jual.reduce((s,c)=>s+N(c.laba),0),zakat:jual.reduce((s,c)=>s+N(c.zakat),0),perbaikan:cs.reduce((s,c)=>s+repTotal(c),0),biayaJual:jual.reduce((s,c)=>s+biayaLainTotal(c),0)}; }
+  const jual=DB.cars.filter(c=>dateInPeriod(carSaleDate(c),bounds));
+  const unsold=DB.cars.filter(c=>{ if(!carBoughtBy(c,bounds))return false; const sold=new Date(carSaleDate(c)); return isNaN(sold)||sold>bounds.end; });
+  const proses=unsold.filter(c=>carStatusInPeriod(c,per)==='proses'),stok=unsold.filter(c=>carStatusInPeriod(c,per)==='stok');
+  const cs=[...unsold,...jual.filter(c=>!unsold.includes(c))];
+  return {
+    cars:cs, stok, proses, jual, unsold,
+    modalStok:unsold.reduce((s,c)=>s+N(c.hargaBeli),0),
+    omzet:jual.reduce((s,c)=>s+saleValue(c),0),
+    laba:jual.reduce((s,c)=>s+N(c.laba),0),
+    zakat:jual.reduce((s,c)=>s+N(c.zakat),0),
+    perbaikan:DB.cars.reduce((sum,c)=>sum+(c.repairs||[]).filter(r=>dateInPeriod(r.tanggal,bounds)).reduce((s,r)=>s+N(r.biaya)+N(r.ongkos),0),0),
+    biayaJual:jual.reduce((s,c)=>s+biayaLainTotal(c),0)
+  };
+}
+
+/* ---------- UI helpers ---------- */
+let _toastT;
+function toast(msg,err){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(err?' err':''); clearTimeout(_toastT); _toastT=setTimeout(()=>t.className='toast',2400); }
+function toggleSidebar(force){ const s=document.getElementById('sidebar'),b=document.getElementById('backdrop'); const open=force==null?!s.classList.contains('open'):force; s.classList.toggle('open',open); b.classList.toggle('show',open); }
+function toggleTheme(){ DB.meta.theme=DB.meta.theme==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',DB.meta.theme); save(); }
+function confirmBox(msg){ return window.confirm(msg); }
+
+/* ================= GENERIC FORM MODAL ================= */
+/* fields: {k,label,type:'text|number|money|date|select|datalist|textarea',opts:[{v,t}],required,width:'full|sp2',ph,section} */
+function formModal(title,fields,values,onSubmit){
+  values=values||{};
+  const body=fields.map(f=>{
+    if(f.section) return `<div class="fsec">${esc(f.section)}</div>`;
+    const w=f.width==='full'?'full':f.width==='sp2'?'sp2':'';
+    const v=values[f.k]!=null?values[f.k]:'';
+    let ctrl;
+    if(f.type==='select'){
+      ctrl=`<select id="ff_${f.k}">${(f.opts||[]).map(o=>`<option value="${esc(o.v)}"${String(o.v)===String(v)?' selected':''}>${esc(o.t)}</option>`).join('')}</select>`;
+    }else if(f.type==='datalist'){
+      ctrl=`<input id="ff_${f.k}" list="fl_${f.k}" value="${esc(v)}" placeholder="${esc(f.ph||'Pilih atau ketik')}"><datalist id="fl_${f.k}">${(f.opts||[]).map(o=>`<option value="${esc(o.v)}">${esc(o.t||o.v)}</option>`).join('')}</datalist>`;
+    }else if(f.type==='textarea'){
+      ctrl=`<textarea id="ff_${f.k}" rows="2" placeholder="${esc(f.ph||'')}">${esc(v)}</textarea>`;
+    }else if(f.type==='money'||f.type==='number'){
+      const dv=f.type==='money'?(moneyN(v)||''):(v===''?'':v);
+      ctrl=`<input id="ff_${f.k}" inputmode="numeric" value="${esc(dv)}" placeholder="${esc(f.ph||'0')}" oninput="_moneyHint('${f.k}',${f.type==='money'?1:0})"${f.readonly?' readonly':''}><div class="money-hint" id="fh_${f.k}"></div>`;
+    }else{
+      ctrl=`<input id="ff_${f.k}" type="${f.type==='date'?'date':'text'}" value="${esc(v)}" placeholder="${esc(f.ph||'')}"${f.required?' required':''}>`;
+    }
+    return `<div class="${w}"><label>${esc(f.label)}${f.required?' *':''}</label>${ctrl}</div>`;
+  }).join('');
+  openModal(title,`<div class="fgrid">${body}</div>`,()=>{
+    const out={};
+    for(const f of fields){ if(f.section)continue; const el=document.getElementById('ff_'+f.k); if(!el)continue;
+      out[f.k]=f.type==='money'?moneyN(el.value):f.type==='number'?N(el.value):el.value.trim(); }
+    for(const f of fields){ if(f.required&&!String(out[f.k]).trim()){ toast('Lengkapi: '+f.label,true); return false; } }
+    return onSubmit(out);
+  });
+  fields.forEach(f=>{ if(f.type==='money'||f.type==='number') _moneyHint(f.k,f.type==='money'?1:0); });
+}
+function _moneyHint(k,money){ const el=document.getElementById('ff_'+k),h=document.getElementById('fh_'+k); if(!el||!h)return; const v=money?moneyN(el.value):N(el.value); h.textContent=money&&v?rp(v):''; }
+
+function openModal(title,bodyHTML,onOk,okLabel){
+  const m=document.getElementById('modal');
+  m.innerHTML=`<div class="modal-h"><h2>${title}</h2><div style="flex:1"></div><button class="btn ghost icon" onclick="closeModal()">✕</button></div>
+    <div class="modal-b">${bodyHTML}</div>
+    <div class="modal-f"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" id="modalOk">${okLabel||'💾 Simpan'}</button></div>`;
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('modalOk').onclick=()=>{ if(onOk()!==false){ /* keep or close handled by onOk */ } };
+  setTimeout(()=>{const i=m.querySelector('input,select,textarea');if(i)i.focus();},60);
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('show'); }
+document.getElementById('overlay').addEventListener('click',e=>{ if(e.target.id==='overlay')closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
+
+/* ================= SVG CHARTS ================= */
+function donut(data,size){ // data:[{label,value,color}]
+  size=size||180; const r=size/2, ir=r*0.62, cx=r,cy=r;
+  const tot=data.reduce((s,d)=>s+d.value,0);
+  if(tot<=0) return `<div class="empty" style="padding:30px">Belum ada data</div>`;
+  let a=-Math.PI/2, paths='';
+  data.forEach(d=>{ const frac=d.value/tot, a2=a+frac*Math.PI*2;
+    const large=frac>0.5?1:0;
+    const x1=cx+r*Math.cos(a),y1=cy+r*Math.sin(a),x2=cx+r*Math.cos(a2),y2=cy+r*Math.sin(a2);
+    const xi2=cx+ir*Math.cos(a2),yi2=cy+ir*Math.sin(a2),xi1=cx+ir*Math.cos(a),yi1=cy+ir*Math.sin(a);
+    paths+=`<path d="M${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} L${xi2} ${yi2} A${ir} ${ir} 0 ${large} 0 ${xi1} ${yi1} Z" fill="${d.color}"/>`;
+    a=a2; });
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${paths}
+    <circle cx="${cx}" cy="${cy}" r="${ir-1}" fill="var(--panel)"/>
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" fill="var(--muted)" font-size="11">Total</text>
+    <text x="${cx}" y="${cy+14}" text-anchor="middle" fill="var(--text)" font-size="14" font-weight="800">${rpShort(tot)}</text></svg>`;
+}
+function barChart(data,opts){ // data:[{label,value}]
+  opts=opts||{}; const W=opts.w||520,H=opts.h||210,pad=30,bw=Math.max(10,(W-pad*2)/Math.max(1,data.length)*0.6);
+  const max=Math.max(1,...data.map(d=>Math.abs(d.value)));
+  const gap=(W-pad*2)/Math.max(1,data.length);
+  let bars='',labels='';
+  data.forEach((d,i)=>{ const h=(Math.abs(d.value)/max)*(H-pad*2); const x=pad+i*gap+(gap-bw)/2; const y=H-pad-h;
+    bars+=`<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="5" fill="${d.color||'url(#g1)'}"><title>${esc(d.label)}: ${rp(d.value)}</title></rect>`;
+    bars+=`<text x="${x+bw/2}" y="${y-6}" text-anchor="middle" fill="var(--muted)" font-size="10">${rpShort(d.value)}</text>`;
+    labels+=`<text x="${x+bw/2}" y="${H-pad+15}" text-anchor="middle" fill="var(--muted)" font-size="10.5">${esc(d.label)}</text>`;
+  });
+  return `<svg width="100%" viewBox="0 0 ${W} ${H}"><defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs>
+    <line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="var(--line)"/>${bars}${labels}</svg>`;
+}
+
+/* ================= ROUTER ================= */
+const PAGES=[
+  {k:'dashboard',ic:'📊',t:'Dashboard',sec:''},
+  {k:'mobil',ic:'🚗',t:'Mobil',sec:'Operasional'},
+  {k:'investor',ic:'👥',t:'Investor & Modal'},
+  {k:'bagihasil',ic:'💰',t:'Bagi Hasil'},
+  {k:'mediator',ic:'🤝',t:'Mediator'},
+  {k:'laporan',ic:'📄',t:'Laporan',sec:'Lainnya'},
+  {k:'pengaturan',ic:'⚙️',t:'Pengaturan'}
+];
+const SUBTITLE={dashboard:'Ringkasan bisnis Anda',mobil:'Stok & penjualan kendaraan',investor:'Pemodal per mobil & bagi hasil',bagihasil:'Modal dan laba per mobil',mediator:'Komisi mediator beli & jual',laporan:'Cetak laporan per periode',pengaturan:'Preferensi & data'};
+function buildNav(){
+  document.getElementById('nav').innerHTML=PAGES.map(p=>
+    (p.sec?`<div class="sec">${p.sec}</div>`:'')+
+    `<a data-k="${p.k}" onclick="go('${p.k}')"><span class="ic">${p.ic}</span>${p.t}</a>`).join('');
+}
+function go(k){ location.hash=k; toggleSidebar(false); }
+function route(){
+  const k=(location.hash.replace('#','')||'dashboard');
+  const page=PAGES.find(p=>p.k===k)?k:'dashboard';
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active',a.dataset.k===page));
+  document.getElementById('pageTitle').textContent=PAGES.find(p=>p.k===page).t;
+  document.getElementById('pageSub').textContent=SUBTITLE[page]||'';
+  document.getElementById('topActions').innerHTML='';
+  try{ ({dashboard:pageDashboard,mobil:pageMobil,investor:pageInvestor,bagihasil:pageBagiHasil,mediator:pageMediator,laporan:pageLaporan,pengaturan:pagePengaturan}[page])(); }
+  catch(e){ document.getElementById('view').innerHTML='<div class="panel">Terjadi kesalahan menampilkan halaman.<br><code>'+esc(e.message)+'</code></div>'; console.error(e); }
+  window.scrollTo(0,0);
+}
+const V=h=>{document.getElementById('view').innerHTML=h;};
+const setActions=h=>{document.getElementById('topActions').innerHTML=h;};
+
+/* periode selector state */
+let selPeriode=null;
+function periodeOptions(sel){ return DB.periodes.map(p=>`<option${p===sel?' selected':''}>${esc(p)}</option>`).join(''); }
+function ensurePeriode(){ syncCalendarPeriods(); const current=periodFromDate(todayISO()); if(!selPeriode||!DB.periodes.includes(selPeriode)) selPeriode=DB.periodes.includes(current)?current:DB.periodes[DB.periodes.length-1]; }
+
+/* ================= DASHBOARD ================= */
+function pageDashboard(){
+  ensurePeriode();
+  const per=selPeriode, st=periodStats(per);
+  const own=ownerStats(), modalInv=modalInvestor();
+  const stokAll=st.unsold;
+  const labaTahun=DB.cars.filter(isSold).reduce((s,c)=>s+N(c.laba),0);
+  const zakatTotal=DB.cars.filter(isSold).reduce((s,c)=>s+N(c.zakat),0);
+  const totalModalAll=own.modal+modalInv;
+  setActions(`<select onchange="selPeriode=this.value;route()" style="width:auto">${periodeOptions(per)}</select>
+    <button class="btn primary" onclick="carForm()">+ Beli Mobil</button>`);
+
+  const kpis=[
+    {lab:'Total Modal',val:rpShort(totalModalAll),hint:'👑 owner '+rpShort(own.modal)+' + investor '+rpShort(modalInv),cls:''},
+    {lab:'👑 Sisa Uang Owner',val:rpShort(own.sisaUang),hint:'modal − mobil owner di stok',cls:'a'},
+    {lab:'Stok Akhir Bulan',val:rpShort(st.modalStok),hint:stokAll.length+' unit dibawa berikutnya',cls:'v'},
+    {lab:'Laba '+per,val:rpShort(st.laba),hint:st.jual.length+' mobil terjual',cls:'g'},
+    {lab:'Total Laba (semua)',val:rpShort(labaTahun),hint:'Zakat '+rpShort(zakatTotal),cls:'p'},
+    {lab:'Proses Leasing',val:st.proses.length+' unit',hint:'menunggu cair',cls:''}
+  ];
+  // laba per periode
+  const labaBar=DB.periodes.map(p=>({label:p.split(' ')[0].slice(0,3),value:periodStats(p).laba}));
+  // modal komposisi: owner (total modal) vs tiap investor (ikut mobil)
+  const modalData=[{label:'👑 '+ownerName(),value:own.modal,color:'#fbbf24'}]
+    .concat(DB.investors.map(i=>({label:i.nama,value:invPrincipalOutstanding(i.id)+invCashStats(i.id).saldo,color:colorFor(i.nama)}))).filter(d=>d.value>0);
+  const modalTotalStok=modalData.reduce((s,d)=>s+d.value,0);
+  V(`
+  <div class="kpis">${kpis.map(k=>`<div class="kpi ${k.cls}"><div class="lab">${k.lab}</div><div class="val">${k.val}</div><div class="hint">${k.hint}</div></div>`).join('')}</div>
+  <div class="grid2">
+    <div class="panel"><div class="panel-h"><h3>📈 Laba per Periode</h3></div>${labaBar.some(d=>d.value)?barChart(labaBar):'<div class="empty">Belum ada penjualan</div>'}</div>
+    <div class="panel"><div class="panel-h"><h3>🥧 Komposisi Modal</h3></div>
+      ${modalData.length?`<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div>${donut(modalData)}</div>
+        <div class="legend" style="flex:1;min-width:150px">${modalData.map(d=>`<div class="li"><span class="dot" style="background:${d.color}"></span>${esc(d.label)}<span class="v">${rpShort(d.value)} · ${(d.value/Math.max(1,modalTotalStok)*100).toFixed(0)}%</span></div>`).join('')}</div></div>`
+        :'<div class="empty">Belum ada mobil stok bermodal.<br><button class="btn primary sm" style="margin-top:10px" onclick="go(\'investor\')">Kelola Investor</button></div>'}
+    </div>
+  </div>`);
+}
+
+/* ================= MOBIL ================= */
+let mobilFilter={status:'ALL',q:'',sortKey:'no',sortDir:1};
+function pageMobil(){
+  ensurePeriode();
+  setActions(`<select onchange="selPeriode=this.value;route()" style="width:auto">${periodeOptions(selPeriode)}</select>
+    <button class="btn" onclick="periodeForm()">📅 Bulan Sekarang</button>
+    <button class="btn primary" onclick="carForm()">+ Beli Mobil</button>`);
+  const st=periodStats(selPeriode);
+  const seg=(v,t)=>`<button class="${mobilFilter.status===v?'active':''}" onclick="mobilFilter.status='${v}';pageMobil()">${t}</button>`;
+  let rows=st.cars.slice();
+  if(mobilFilter.status==='STOK')rows=rows.filter(c=>carStatusInPeriod(c,selPeriode)!=='terjual');
+  if(mobilFilter.status==='PROSES')rows=rows.filter(c=>carStatusInPeriod(c,selPeriode)==='proses');
+  if(mobilFilter.status==='TERJUAL')rows=rows.filter(c=>carStatusInPeriod(c,selPeriode)==='terjual');
+  const q=mobilFilter.q.trim().toLowerCase();
+  if(q)rows=rows.filter(c=>[c.produk,c.nama,c.type,c.transmisi,c.tahun,c.warna,c.noPolisi,c.noRangka,c.medBeli,c.medJual,c.pembeli,c.leasingCompany,c.surveyor,c.lokasi,c.ket].join(' ').toLowerCase().includes(q));
+  const ord={stok:0,proses:1,terjual:2};
+  const k=mobilFilter.sortKey,dir=mobilFilter.sortDir;
+  rows.sort((a,b)=>{let x=k==='status'?ord[carStatusInPeriod(a,selPeriode)]:k==='hargaJual'?saleValue(a):a[k],y=k==='status'?ord[carStatusInPeriod(b,selPeriode)]:k==='hargaJual'?saleValue(b):b[k];
+    if(['no','hargaBeli','hargaJual','laba','zakat','tahun'].includes(k)){x=N(x);y=N(y);}else{x=String(x||'').toLowerCase();y=String(y||'').toLowerCase();}
+    return x<y?-dir:x>y?dir:0;});
+  V(`
+  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+    <div class="kpi a"><div class="lab">Stok Akhir Bulan</div><div class="val">${st.unsold.length}</div><div class="hint">${rpShort(st.modalStok)} • dibawa berikutnya</div></div>
+    <div class="kpi"><div class="lab">🏦 Proses Leasing</div><div class="val" style="color:var(--amber)">${st.proses.length}</div><div class="hint">menunggu cair</div></div>
+    <div class="kpi g"><div class="lab">Terjual</div><div class="val">${st.jual.length}</div><div class="hint">Omzet ${rpShort(st.omzet)}</div></div>
+    <div class="kpi"><div class="lab">Laba</div><div class="val" style="color:var(--green)">${rpShort(st.laba)}</div><div class="hint">Periode ${esc(selPeriode)}</div></div>
+    <div class="kpi v"><div class="lab">Zakat 2.5%</div><div class="val">${rpShort(st.zakat)}</div><div class="hint">Dari laba</div></div>
+    <div class="kpi p"><div class="lab">🔧 Perbaikan</div><div class="val">${rpShort(st.perbaikan)}</div><div class="hint">+biaya jual ${rpShort(st.biayaJual)}</div></div>
+  </div>
+  <div class="panel" style="padding:11px 15px;margin-bottom:15px"><b>Rekap ${esc(selPeriode)}:</b> ${st.jual.length} terjual • ${st.unsold.length} stok tersisa di akhir bulan.</div>
+  <div class="toolbar">
+    <div class="seg">${seg('ALL','Semua')}${seg('STOK','Stok'+(st.proses.length?' +'+st.proses.length+' proses':''))}${seg('PROSES','Proses ('+st.proses.length+')')}${seg('TERJUAL','Terjual')}</div>
+    <input class="grow" placeholder="🔎 Cari mobil, plat, mediator, leasing…" value="${esc(mobilFilter.q)}" oninput="mobilFilter.q=this.value;clearTimeout(window._mq);window._mq=setTimeout(pageMobil,180)">
+    <div style="flex:1"></div>
+    <button class="btn sm" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+  ${mobilFilter.status==='STOK'?_tblStok(rows):mobilFilter.status==='TERJUAL'?_tblTerjual(rows):_tblAll(rows)}`);
+}
+function rowActions(c,stt){
+  const S=id=>`event.stopPropagation();`;
+  let a='';
+  if(stt==='stok') a+=`<button class="btn sm primary" title="Jual" onclick="event.stopPropagation();sellStart('${c.id}')">💵 Jual</button>`;
+  else if(stt==='proses') a+=`<button class="btn sm primary" title="Proses leasing" onclick="event.stopPropagation();leasingResult('${c.id}')">🏦 Proses ▸</button>`;
+  else a+=`<button class="btn sm" title="Edit penjualan" onclick="event.stopPropagation();sellEdit('${c.id}')">🧾</button>`;
+  a+=`<button class="btn sm" title="Perbaikan" onclick="event.stopPropagation();repairsModal('${c.id}')">🔧${(c.repairs&&c.repairs.length)?'<b> '+c.repairs.length+'</b>':''}</button>`;
+  a+=`<button class="btn sm" title="Edit data mobil" onclick="event.stopPropagation();carForm('${c.id}')">✏</button>`;
+  a+=`<button class="btn sm danger" title="Hapus" onclick="event.stopPropagation();delCar('${c.id}')">🗑</button>`;
+  return a;
+}
+function sortMobil(k){ if(mobilFilter.sortKey===k)mobilFilter.sortDir*=-1;else{mobilFilter.sortKey=k;mobilFilter.sortDir=1;} pageMobil(); }
+
+/* ---- Tab-specific table renders ---- */
+function _tblStok(rows){
+  const n=rows.length;
+  return `<div class="tablewrap"><table><thead><tr>
+    <th>No</th><th>Nama Modal</th><th>Produk</th><th>Nama</th><th>Tipe</th><th>AT/MT</th><th>Thn</th><th>Warna</th>
+    <th>No. Polisi</th><th>No. Rangka</th><th>No. Mesin</th>
+    <th>Tgl Beli</th><th class="num">Total Beli</th><th class="num">Komisi</th>
+    <th>Mediator Beli</th><th>Lokasi/Asal</th><th>Status</th><th></th>
+  </tr></thead><tbody>${n?rows.map(c=>{
+    const stt=carStatusInPeriod(c,selPeriode), currentStatus=carStatus(c), isPros=stt==='proses';
+    return `<tr ondblclick="carForm('${c.id}')" style="${isPros?'background:color-mix(in srgb,var(--amber) 7%,transparent)':''}">
+      <td class="muted">${c.no||''}</td>
+      <td><span class="mini" style="color:${c.pemodalId?'var(--violet)':'var(--amber)'}">${esc(carFundingLabel(c))}</span></td>
+      <td>${esc(c.produk||'—')}</td>
+      <td><b>${esc(c.nama)}</b>${repTotal(c)?' <span class="mini" style="color:var(--pink)">🔧'+rpShort(repTotal(c))+'</span>':''}</td>
+      <td class="muted">${esc(c.type||'')}</td>
+      <td>${esc(c.transmisi||'—')}</td>
+      <td>${esc(c.tahun||'')}</td>
+      <td class="mini">${esc(c.warna||'—')}</td>
+      <td class="mini">${esc(c.noPolisi||'—')}</td>
+      <td class="mini" style="max-width:120px;overflow:hidden;text-overflow:ellipsis" title="${esc(c.noRangka||'')}">${esc(c.noRangka||'—')}</td>
+      <td class="mini">${esc(c.noMesin||'—')}</td>
+      <td class="mini">${fmtDateShort(c.tglBeli)}</td>
+      <td class="num">${rp(c.hargaBeli)}</td>
+      <td class="num muted">${N(c.komisiBeli)?rp(c.komisiBeli):'—'}</td>
+      <td class="mini">${esc(c.medBeli||'—')}</td>
+      <td class="mini">${esc(c.lokasi||'—')}</td>
+      <td>${isPros?`<span class="pill proses">PROSES</span><div class="mini" style="color:var(--amber);margin-top:2px">${esc(c.leasingCompany||'')}${N(c.dpMasuk)?' • DP '+rpShort(c.dpMasuk):''}</div>`:'<span class="pill stok">STOK</span>'}</td>
+      <td><div class="rowact">${rowActions(c,currentStatus)}</div></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="18"><div class="empty"><div class="big">🚗</div>Belum ada mobil stok/proses.<br><button class="btn primary" style="margin-top:12px" onclick="carForm()">+ Beli Mobil</button></div></td></tr>`}</tbody></table></div>`;
+}
+function _tblTerjual(rows){
+  const n=rows.length;
+  return `<div class="tablewrap"><table><thead><tr>
+    <th>No</th><th>Nama Modal</th><th>Produk</th><th>Nama</th><th>Tipe</th><th>AT/MT</th><th>Thn</th>
+    <th class="num">Harga Beli</th>
+    <th>Tgl Pengajuan</th><th class="num">DP Masuk</th>
+    <th>Tgl Cair</th><th class="num">Cair</th><th class="num">Refund</th>
+    <th>Nama Leasing</th><th>Nama Survey</th>
+    <th>Tgl Jual</th><th class="num">Jual Cash</th>
+    <th class="num">Laba Kotor</th><th class="num">Zakat 2.5%</th><th class="num">Laba</th>
+    <th class="num">Owner</th><th class="num">Investor</th>
+    <th class="num">Komisi</th><th>Mediator Jual</th><th>Alamat Pembeli</th><th></th>
+  </tr></thead><tbody>${n?rows.map(c=>{
+    const sv=saleValue(c), laba=N(c.laba), zk=N(c.zakat);
+    const labaKotor=sv-N(c.hargaBeli);
+    const invSh=carInvestorShare(c), ownSh=carOwnerShare(c);
+    return `<tr ondblclick="sellEdit('${c.id}')">
+      <td class="muted">${c.no||''}</td>
+      <td><span class="mini" style="color:${c.pemodalId?'var(--violet)':'var(--amber)'}">${c.pemodalId?'👤 '+esc(invName(c.pemodalId)):'👑 '+esc(ownerName())}</span></td>
+      <td>${esc(c.produk||'—')}</td>
+      <td><b>${esc(c.nama)}</b></td>
+      <td class="muted">${esc(c.type||'')}</td>
+      <td>${esc(c.transmisi||'—')}</td>
+      <td>${esc(c.tahun||'')}</td>
+      <td class="num">${rp(c.hargaBeli)}</td>
+      <td class="mini">${fmtDateShort(c.tglPengajuan)}</td>
+      <td class="num muted">${N(c.dpMasuk)?rp(c.dpMasuk):'—'}</td>
+      <td class="mini">${fmtDateShort(c.tglCair)}</td>
+      <td class="num">${N(c.nilaiCair)?rp(c.nilaiCair):'—'}</td>
+      <td class="num muted">${N(c.refundLeasing)?rp(c.refundLeasing):'—'}</td>
+      <td class="mini">${esc(c.leasingCompany||'—')}</td>
+      <td class="mini">${esc(c.surveyor||'—')}</td>
+      <td class="mini">${fmtDateShort(c.tglJual)}</td>
+      <td class="num">${N(c.hargaJual)?rp(c.hargaJual):'—'}</td>
+      <td class="num">${rp(labaKotor)}</td>
+      <td class="num ${zk>0?'':'muted'}">${zk?rp(zk):'—'}</td>
+      <td class="num ${laba>0?'pos':laba<0?'neg':''}">${rp(laba)}</td>
+      <td class="num">${rp(ownSh)}</td>
+      <td class="num ${invSh>0?'':'muted'}">${invSh?rp(invSh):'—'}</td>
+      <td class="num muted">${N(c.komisiJual)?rp(c.komisiJual):'—'}</td>
+      <td class="mini">${esc(c.medJual||'—')}</td>
+      <td class="mini">${esc(c.alamat||'—')}</td>
+      <td><div class="rowact">${rowActions(c,'terjual')}</div></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="26"><div class="empty"><div class="big">💰</div>Belum ada penjualan.</div></td></tr>`}</tbody></table></div>`;
+}
+function _tblAll(rows){
+  const cols=[['no','No'],['','Nama Modal'],['produk','Produk'],['nama','Nama'],['type','Tipe'],['transmisi','AT/MT'],['tahun','Thn'],['status','Status'],['tglBeli','Beli'],['hargaBeli','Harga Beli',1],['tglJual','Jual'],['hargaJual','Nilai Jual',1],['laba','Laba',1],['','']];
+  return `<div class="tablewrap"><table><thead><tr>${cols.map(c=>c[0]?`<th class="${c[2]?'num':''}" onclick="sortMobil('${c[0]}')">${c[1]}${mobilFilter.sortKey===c[0]?(mobilFilter.sortDir>0?' ▲':' ▼'):''}</th>`:`<th>${c[1]}</th>`).join('')}</tr></thead>
+  <tbody>${rows.length?rows.map(c=>{const stt=carStatusInPeriod(c,selPeriode),currentStatus=carStatus(c),laba=N(c.laba);return `<tr ondblclick="carForm('${c.id}')">
+    <td class="muted">${c.no||''}</td>
+    <td><span class="mini" style="color:${c.pemodalId?'var(--violet)':'var(--amber)'}">${esc(carFundingLabel(c))}</span></td>
+    <td>${esc(c.produk||'—')}</td>
+    <td><b>${esc(c.nama||'—')}</b>${c.warna?`<div class="mini">${esc(c.warna)}</div>`:''}</td>
+    <td>${esc(c.type||'—')}</td>
+    <td>${esc(c.transmisi||'—')}</td>
+    <td>${esc(c.tahun||'')}</td>
+    <td><span class="pill ${stt==='terjual'?'jual':stt==='proses'?'proses':'stok'}">${STATUSLABEL[stt]}</span></td>
+    <td class="mini">${fmtDateShort(c.tglBeli)}</td>
+    <td class="num">${c.hargaBeli?rp(c.hargaBeli):'<span class="muted">-</span>'}</td>
+    <td class="mini">${fmtDateShort(c.tglCair||c.tglJual)}</td>
+    <td class="num">${saleValue(c)?rp(saleValue(c)):'<span class="muted">-</span>'}</td>
+    <td class="num ${laba>0?'pos':laba<0?'neg':''}">${isSold(c)?rp(laba):'<span class="muted">-</span>'}</td>
+    <td><div class="rowact">${rowActions(c,currentStatus)}</div></td>
+  </tr>`}).join(''):`<tr><td colspan="${cols.length}"><div class="empty"><div class="big">🚗</div>Belum ada mobil di filter ini.<br><button class="btn primary" style="margin-top:12px" onclick="carForm()">+ Beli Mobil</button></div></td></tr>`}</tbody></table></div>`;
+}
+
+function carForm(id){
+  ensurePeriode();
+  const c=id?DB.cars.find(x=>x.id===id):null;
+  const pemodalOpts=[{v:'',t:'👑 '+ownerName()+' (modal sendiri)'}].concat(DB.investors.map(i=>({v:i.id,t:i.nama})));
+  const productOpts=['Toyota','Honda','Daihatsu','Suzuki','Mitsubishi','Nissan','Mazda','Isuzu','Wuling','Hyundai','Kia','Ford','Chevrolet','BMW','Mercedes-Benz'].map(v=>({v,t:v}));
+  const nameOpts=['Avanza','Innova','Yaris','Agya','Calya','Rush','Fortuner','Brio','Jazz','Mobilio','BR-V','HR-V','CR-V','Xenia','Ayla','Terios','Sigra','Ertiga','XL7','Carry','Xpander','Pajero Sport','Livina','Serena','Almaz','Confero'].map(v=>({v,t:v}));
+  const typeOpts=['E','G','V','R','S','RS','TRD','Sport','Prestige','Ultimate','Exceed','GLS','GX','DLX'].map(v=>({v,t:v}));
+  const fields=[
+    {section:'Identitas Mobil'},
+    {k:'produk',label:'Produk',type:'datalist',opts:productOpts,required:true},
+    {k:'nama',label:'Nama',type:'datalist',opts:nameOpts,required:true},
+    {k:'type',label:'Tipe',type:'datalist',opts:typeOpts},
+    {k:'transmisi',label:'AT / MT',type:'select',opts:[{v:'',t:'— pilih —'},{v:'AT',t:'AT (Matic)'},{v:'MT',t:'MT (Manual)'}]},
+    {k:'tahun',label:'Tahun'},{k:'warna',label:'Warna'},{k:'noPolisi',label:'No. Polisi'},
+    {k:'noRangka',label:'No. Rangka',width:'sp2'},{k:'noMesin',label:'No. Mesin'},
+    {section:'Pembelian'},
+    {k:'tglBeli',label:'Tgl Beli',type:'date'},{k:'hargaBeli',label:'Harga Beli',type:'money'},{k:'komisiBeli',label:'Komisi Beli',type:'money'},
+    {k:'medBeli',label:'Mediator Beli'},{k:'lokasi',label:'Lokasi'},
+    {section:'Sumber Uang Pembelian'},
+    {k:'pemodalId',label:'Pilih Investor',type:'select',opts:pemodalOpts,width:'sp2'},
+    {k:'modalInvestor',label:'Uang Investor (Rp)',type:'money'},
+    {section:'Catatan'},
+    {k:'ket',label:'Keterangan',type:'textarea',width:'full'}
+  ];
+  const vals=c?Object.assign({},c):{tglBeli:todayISO(),pemodalId:'',modalInvestor:0,bagiPct:DB.meta.defaultBagiPct};
+  formModal(id?'Edit Pembelian Mobil':'Beli Mobil',fields,vals,out=>{
+    out.akunBeli='';
+    if(!out.pemodalId)out.modalInvestor=0;
+    if(out.pemodalId&&N(out.modalInvestor)<=0){ toast('Isi jumlah uang investor',true); return false; }
+    if(N(out.modalInvestor)>N(out.hargaBeli)){ toast('Uang investor tidak boleh melebihi harga beli',true); return false; }
+    out.periode=periodFromDate(out.tglBeli)||(c&&c.periode)||periodFromDate(todayISO());
+    if(!DB.periodes.includes(out.periode))DB.periodes.push(out.periode);
+    if(c){ Object.assign(c,out); toast('Mobil diperbarui ✓'); }
+    else{ const maxNo=Math.max(0,...DB.cars.filter(x=>x.periode===out.periode).map(x=>N(x.no))); out.id=uid('c'); out.no=maxNo+1; DB.cars.push(out); toast('Pembelian mobil disimpan ✓'); }
+    syncCalendarPeriods(); save(); closeModal(); selPeriode=out.periode; route();
+  });
+  setTimeout(()=>{
+    const harga=document.getElementById('ff_hargaBeli'),investor=document.getElementById('ff_pemodalId'),nominal=document.getElementById('ff_modalInvestor');
+    if(!harga||!investor||!nominal)return;
+    const hint=document.createElement('div'); hint.id='fundingSummary'; hint.className='full'; hint.style.cssText='background:var(--panel2);padding:12px 14px;border-radius:10px;font-weight:700';
+    nominal.closest('div').after(hint);
+    const update=()=>{ const total=N(harga.value),inv=investor.value?N(nominal.value):0,owner=Math.max(0,total-inv),pct=total?Math.min(100,inv/total*100):0; nominal.disabled=!investor.value; hint.innerHTML=`Uang investor: <span style="color:var(--violet)">${rp(inv)}</span> (${pct.toFixed(1)}%) &nbsp;•&nbsp; Uang owner: <span style="color:var(--amber)">${rp(owner)}</span> (${(100-pct).toFixed(1)}%)`; };
+    harga.addEventListener('input',update); investor.addEventListener('change',update); nominal.addEventListener('input',update); update();
+  },60);
+  // tombol perbaikan (saat edit) + info alur jual
+  if(c) setTimeout(()=>{ const b=document.querySelector('.modal-b .fgrid'); if(b&&!document.getElementById('carExtra')){
+    const div=document.createElement('div'); div.className='full'; div.id='carExtra'; div.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:12px';
+    div.innerHTML=`<button type="button" class="btn sm" onclick="closeModal();repairsModal('${c.id}')">🔧 Perbaikan (${rpShort(repTotal(c))})</button>`
+      +(isStok(c)?`<button type="button" class="btn sm primary" onclick="closeModal();sellStart('${c.id}')">💵 Jual mobil ini</button>`:'')
+      +`<span class="mini">Data penjualan dikelola lewat tombol Jual/Cair di tabel.</span>`;
+    b.appendChild(div);
+  }},80);
+}
+function delCar(id){ const c=DB.cars.find(x=>x.id===id); if(!c)return; if(!confirmBox(`Hapus "${c.nama} ${c.type||''}"?`))return; DB.cars=DB.cars.filter(x=>x.id!==id); save(); pageMobil(); toast('Mobil dihapus'); }
+
+/* ===== WIZARD PENJUALAN ===== */
+let _sell={carId:null,method:'cash',biaya:[]};
+function carHeadNote(c){ return `<div class="full" style="background:var(--panel2);padding:11px 13px;border-radius:10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+  <div class="avatar" style="width:34px;height:34px;font-size:12px;background:${colorFor(c.nama)}">${initials(c.nama)}</div>
+  <div><b>${esc(c.nama)} ${esc(c.type||'')}</b> <span class="mini">${esc(c.tahun||'')} ${esc(c.warna||'')}</span><div class="mini">Modal beli ${rp(c.hargaBeli)}${N(c.komisiBeli)?' + komisi '+rpShort(c.komisiBeli):''}${repTotal(c)?' • 🔧 '+rpShort(repTotal(c)):''} • ${c.pemodalId?'👤 '+esc(invName(c.pemodalId)):'👑 '+esc(ownerName())}</div></div></div>`; }
+
+function sellStart(id){
+  const c=DB.cars.find(x=>x.id===id); if(!c)return;
+  openModal('Jual — '+esc(c.nama)+' '+esc(c.type||''),`
+    <p class="mini" style="margin-top:0">Pilih metode penjualan:</p>
+    <div style="display:flex;gap:14px;flex-wrap:wrap">
+      <button class="btn" style="flex:1;min-width:210px;padding:22px;flex-direction:column;gap:6px" onclick="sellCashForm('${id}')"><div style="font-size:30px">💵</div><b>CASH / Tunai</b><span class="mini" style="text-align:center">Langsung terjual dengan harga jual</span></button>
+      <button class="btn" style="flex:1;min-width:210px;padding:22px;flex-direction:column;gap:6px" onclick="leasingApplyForm('${id}')"><div style="font-size:30px">🏦</div><b>LEASING / Kredit</b><span class="mini" style="text-align:center">Ajukan dulu (DP, survey) → status Proses, cair menyusul</span></button>
+    </div>`,()=>closeModal(),'Tutup');
+}
+
+function sellCashForm(id){
+  const c=DB.cars.find(x=>x.id===id); if(!c)return;
+  _sell={carId:id,method:'cash',biaya:(c.biayaLain||[]).map(b=>Object.assign({},b))};
+  const body=`<div class="fgrid">${carHeadNote(c)}
+    <div><label>Pembeli</label><input id="s_pembeli" value="${esc(c.pembeli||'')}"></div>
+    <div class="sp2"><label>Alamat pembeli</label><input id="s_alamat" value="${esc(c.alamat||'')}"></div>
+    <div><label>Tgl Jual</label><input type="date" id="s_tglJual" value="${c.tglJual||todayISO()}"></div>
+    <div><label>Harga Jual</label><input id="s_hargaJual" inputmode="numeric" value="${N(c.hargaJual)||''}" oninput="recalcSell()"></div>
+    <div><label>Mediator Jual</label><input id="s_medJual" value="${esc(c.medJual||'')}"></div>
+    <div><label>Komisi Jual</label><input id="s_komisiJual" inputmode="numeric" value="${N(c.komisiJual)||''}" oninput="recalcSell()"></div>
+    <div><label>Jatah Investor (Rp)</label><input id="s_bagiRp" inputmode="numeric" value="${N(c.bagiRp)||''}" placeholder="0" oninput="recalcSell()"><div class="money-hint" id="h_bagiRp"></div></div>
+    <div class="fsec">Biaya Lain — untuk apa / kepada siapa</div>
+    <div class="full" id="biayaBox"></div>
+    <div class="full"><button type="button" class="btn sm" onclick="addBiaya()">+ Tambah biaya</button></div>
+    <div class="full" id="labaPrev" style="background:var(--panel2);padding:12px;border-radius:10px"></div>
+  </div>`;
+  openModal('💵 Jual Cash — '+esc(c.nama),body,()=>{
+    const g=x=>document.getElementById(x);
+    const hj=moneyN(g('s_hargaJual').value); if(!hj){toast('Isi harga jual',true);return false;}
+    Object.assign(c,{metodeJual:'cash',leasingStatus:'',pembeli:g('s_pembeli').value.trim(),alamat:g('s_alamat').value.trim(),tglJual:g('s_tglJual').value||todayISO(),hargaJual:hj,jualLeasing:0,akunJual:'',medJual:g('s_medJual').value.trim(),komisiJual:moneyN(g('s_komisiJual').value),bagiRp:moneyN(g('s_bagiRp').value),biayaLain:_sell.biaya.filter(b=>N(b.jumlah)>0||b.untuk)});
+    c.laba=labaAuto(c); c.zakat=Math.round(c.laba>0?c.laba*(DB.meta.zakatRate/100):0);
+    save();closeModal();pageMobil();toast('Mobil TERJUAL (cash) ✓');
+  },'✓ Simpan Terjual');
+  setTimeout(()=>{renderBiaya();recalcSell();},60);
+}
+
+function leasingApplyForm(id){
+  const c=DB.cars.find(x=>x.id===id); if(!c)return;
+  const body=`<div class="fgrid">${carHeadNote(c)}
+    <div><label>Pembeli</label><input id="s_pembeli" value="${esc(c.pembeli||'')}"></div>
+    <div class="sp2"><label>Alamat pembeli</label><input id="s_alamat" value="${esc(c.alamat||'')}"></div>
+    <div><label>Tgl Pengajuan</label><input type="date" id="s_tglPengajuan" value="${c.tglPengajuan||todayISO()}"></div>
+    <div><label>DP Masuk</label><input id="s_dpMasuk" inputmode="numeric" value="${N(c.dpMasuk)||''}"></div>
+    <div class="sp2"><label>Proses Leasing (perusahaan)</label><input id="s_leasingCompany" value="${esc(c.leasingCompany||'')}" placeholder="mis. Adira, BAF, WOM…"></div>
+    <div><label>Surveyor</label><input id="s_surveyor" value="${esc(c.surveyor||'')}"></div>
+    <div><label>Mediator Jual</label><input id="s_medJual" value="${esc(c.medJual||'')}"></div>
+    <div class="full" style="background:var(--panel2);padding:11px;border-radius:10px" class="mini"><span class="mini">ℹ️ Mobil akan berstatus <b style="color:var(--amber)">PROSES LEASING</b> — belum dihitung sebagai terjual. Setelah hasil keluar, tekan <b>✅ Cair</b> atau <b>✖ Ditolak</b>.</span></div>
+  </div>`;
+  openModal('🏦 Ajukan Leasing — '+esc(c.nama),body,()=>{
+    const g=x=>document.getElementById(x);
+    Object.assign(c,{metodeJual:'leasing',leasingStatus:'proses',pembeli:g('s_pembeli').value.trim(),alamat:g('s_alamat').value.trim(),tglPengajuan:g('s_tglPengajuan').value||todayISO(),dpMasuk:moneyN(g('s_dpMasuk').value),akunDp:'',leasingCompany:g('s_leasingCompany').value.trim(),surveyor:g('s_surveyor').value.trim(),medJual:g('s_medJual').value.trim()});
+    save();closeModal();pageMobil();toast('Pengajuan leasing dicatat — status PROSES 🏦');
+  },'Simpan (Proses)');
+}
+
+function leasingCairForm(id){
+  const c=DB.cars.find(x=>x.id===id); if(!c)return;
+  _sell={carId:id,method:'leasing',biaya:(c.biayaLain||[]).map(b=>Object.assign({},b))};
+  const body=`<div class="fgrid">${carHeadNote(c)}
+    <div class="full mini" style="background:var(--panel2);padding:10px 12px;border-radius:10px">Pengajuan: ${esc(c.leasingCompany||'-')} • Surveyor ${esc(c.surveyor||'-')} • DP masuk <b>${rp(c.dpMasuk)}</b> (${fmtDate(c.tglPengajuan)})</div>
+    <div><label>Tgl Cair</label><input type="date" id="s_tglCair" value="${c.tglCair||todayISO()}"></div>
+    <div><label>Nilai Cair (dari leasing)</label><input id="s_nilaiCair" inputmode="numeric" value="${N(c.nilaiCair)||''}" oninput="recalcSell()"></div>
+    <div><label>Refund dari Leasing</label><input id="s_refund" inputmode="numeric" value="${N(c.refundLeasing)||''}" oninput="recalcSell()"></div>
+    <div><label>Mediator Jual</label><input id="s_medJual" value="${esc(c.medJual||'')}"></div>
+    <div><label>Komisi Jual</label><input id="s_komisiJual" inputmode="numeric" value="${N(c.komisiJual)||''}" oninput="recalcSell()"></div>
+    <div><label>Jatah Investor (Rp)</label><input id="s_bagiRp" inputmode="numeric" value="${N(c.bagiRp)||''}" placeholder="0" oninput="recalcSell()"><div class="money-hint" id="h_bagiRp"></div></div>
+    <div class="fsec">Biaya Lain — untuk apa / kepada siapa</div>
+    <div class="full" id="biayaBox"></div>
+    <div class="full"><button type="button" class="btn sm" onclick="addBiaya()">+ Tambah biaya</button></div>
+    <div class="full" id="labaPrev" style="background:var(--panel2);padding:12px;border-radius:10px"></div>
+  </div>`;
+  openModal('✅ Pencairan Leasing — '+esc(c.nama),body,()=>{
+    const g=x=>document.getElementById(x);
+    const cair=moneyN(g('s_nilaiCair').value); if(!cair){toast('Isi nilai cair',true);return false;}
+    Object.assign(c,{metodeJual:'leasing',leasingStatus:'cair',tglCair:g('s_tglCair').value||todayISO(),nilaiCair:cair,refundLeasing:moneyN(g('s_refund').value),akunCair:'',medJual:g('s_medJual').value.trim(),komisiJual:moneyN(g('s_komisiJual').value),bagiRp:moneyN(g('s_bagiRp').value),tglJual:g('s_tglCair').value||todayISO(),biayaLain:_sell.biaya.filter(b=>N(b.jumlah)>0||b.untuk)});
+    c.laba=labaAuto(c); c.zakat=Math.round(c.laba>0?c.laba*(DB.meta.zakatRate/100):0);
+    save();closeModal();pageMobil();toast('Leasing CAIR — Mobil TERJUAL ✓');
+  },'✓ Cairkan (Terjual)');
+  setTimeout(()=>{renderBiaya();recalcSell();},60);
+}
+
+function leasingResult(id){
+  const c=DB.cars.find(x=>x.id===id); if(!c)return;
+  openModal('🏦 Proses Leasing — '+esc(c.nama)+' '+esc(c.type||''),`
+    <div class="mini" style="margin-bottom:14px;background:var(--panel2);padding:10px 12px;border-radius:10px">
+      Pengajuan: <b>${esc(c.leasingCompany||'-')}</b> • Surveyor: ${esc(c.surveyor||'-')} • DP masuk <b>${rp(c.dpMasuk)}</b> (${fmtDate(c.tglPengajuan)})</div>
+    <p class="mini" style="margin-top:0">Hasil proses leasing:</p>
+    <div style="display:flex;gap:14px;flex-wrap:wrap">
+      <button class="btn" style="flex:1;min-width:200px;padding:22px;flex-direction:column;gap:6px;border-color:var(--green)" onclick="leasingCairForm('${id}')"><div style="font-size:30px">✅</div><b>SELESAI / Cair</b><span class="mini" style="text-align:center">Leasing berhasil — input nilai cair &amp; refund → Terjual</span></button>
+      <button class="btn danger" style="flex:1;min-width:200px;padding:22px;flex-direction:column;gap:6px" onclick="leasingReject('${id}')"><div style="font-size:30px">✖</div><b>BATAL</b><span class="mini" style="text-align:center">Leasing gagal/ditolak — mobil kembali ke STOK</span></button>
+    </div>`,()=>closeModal(),'Tutup');
+}
+function leasingReject(id){
+  const c=DB.cars.find(x=>x.id===id); if(!c)return;
+  if(!confirmBox(`Leasing "${c.nama} ${c.type||''}" DIBATALKAN?\nSemua data pengajuan akan dihapus — mobil kembali ke STOK murni.`))return;
+  const note='Leasing '+(c.leasingCompany||'')+' BATAL';
+  Object.assign(c,{metodeJual:'',leasingStatus:'',pembeli:'',alamat:'',tglPengajuan:'',dpMasuk:0,akunDp:'',leasingCompany:'',surveyor:'',tglCair:'',nilaiCair:0,refundLeasing:0,akunCair:'',medJual:'',komisiJual:0,tglJual:'',hargaJual:0,jualLeasing:0,laba:0,zakat:0,biayaLain:[]});
+  c.ket=((c.ket?c.ket+' | ':'')+note).trim();
+  save(); closeModal(); pageMobil(); toast('Leasing dibatalkan — mobil kembali ke STOK');
+}
+
+function sellEdit(id){ const c=DB.cars.find(x=>x.id===id); if(!c)return; if(c.metodeJual==='leasing')leasingCairForm(id); else sellCashForm(id); }
+
+function renderBiaya(){
+  const box=document.getElementById('biayaBox'); if(!box)return;
+  box.innerHTML=_sell.biaya.length?_sell.biaya.map((b,i)=>`<div style="display:grid;grid-template-columns:1.4fr 1.2fr 1fr auto;gap:6px;margin-bottom:6px">
+    <input placeholder="Untuk apa" value="${esc(b.untuk||'')}" oninput="_sell.biaya[${i}].untuk=this.value">
+    <input placeholder="Kepada siapa" value="${esc(b.kepada||'')}" oninput="_sell.biaya[${i}].kepada=this.value">
+    <input placeholder="Jumlah" inputmode="numeric" value="${b.jumlah||''}" oninput="_sell.biaya[${i}].jumlah=moneyN(this.value);recalcSell()">
+    <button type="button" class="btn sm danger" onclick="_sell.biaya.splice(${i},1);renderBiaya();recalcSell()">✕</button></div>`).join(''):'<div class="mini">Belum ada biaya lain. Klik "+ Tambah biaya".</div>';
+}
+function addBiaya(){ _sell.biaya.push({untuk:'',kepada:'',jumlah:0}); renderBiaya(); }
+function recalcSell(){
+  const c=DB.cars.find(x=>x.id===_sell.carId); if(!c)return;
+  const g=x=>moneyN((document.getElementById(x)||{}).value);
+  const sval=_sell.method==='leasing'?(N(c.dpMasuk)+g('s_nilaiCair')+g('s_refund')):g('s_hargaJual');
+  const biaya=_sell.biaya.reduce((s,b)=>s+N(b.jumlah),0);
+  const komJual=g('s_komisiJual');
+  const laba=sval-N(c.hargaBeli)-N(c.komisiBeli)-komJual-repTotal(c)-biaya;
+  const bagiRp=g('s_bagiRp'), zk=Math.round(laba>0?laba*(DB.meta.zakatRate/100):0);
+  const hintEl=document.getElementById('h_bagiRp'); if(hintEl)hintEl.textContent=bagiRp?rp(bagiRp):'';
+  const box=document.getElementById('labaPrev'); if(!box)return;
+  let h=`<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><b>💰 Laba bersih: <span class="${laba>=0?'pos':'neg'}">${rp(laba)}</span></b><span class="mini">Zakat ${DB.meta.zakatRate}% = ${rp(zk)}</span></div>
+    <div class="mini" style="margin-top:4px">Nilai jual ${rp(sval)} − beli ${rpShort(N(c.hargaBeli))} − komisi ${rpShort(N(c.komisiBeli)+komJual)} − perbaikan ${rpShort(repTotal(c))} − biaya lain ${rpShort(biaya)}</div>`;
+  if(c.pemodalId){const inv=bagiRp;h+=`<div class="mini" style="margin-top:6px">Bagi hasil → 👤 <b>${esc(invName(c.pemodalId))}</b> = <b class="pos">${rp(inv)}</b> · 👑 <b>${esc(ownerName())}</b> = <b>${rp(laba-inv)}</b></div>`;}
+  else h+=`<div class="mini" style="margin-top:6px">Modal owner — laba penuh untuk 👑 <b>${esc(ownerName())}</b></div>`;
+  box.innerHTML=h;
+}
+
+/* ---- Perbaikan per mobil ---- */
+let _repCarId=null;
+function repairsModal(id){ _repCarId=id; renderRepairs(); }
+function renderRepairs(){
+  const c=DB.cars.find(x=>x.id===_repCarId); if(!c)return; c.repairs=c.repairs||[];
+  const rows=c.repairs.slice().sort((a,b)=>(a.tanggal||'').localeCompare(b.tanggal||'')).map(r=>`<tr>
+    <td class="mini">${fmtDate(r.tanggal)}</td>
+    <td>${esc(r.untuk||'')}</td>
+    <td class="num">${N(r.biaya)?rp(r.biaya):'<span class="muted">-</span>'}</td>
+    <td class="num">${N(r.ongkos)?rp(r.ongkos):'<span class="muted">-</span>'}</td>
+    <td class="num"><b>${rp(N(r.biaya)+N(r.ongkos))}</b></td>
+    <td>${esc(r.oleh||'')}</td>
+    <td><div class="rowact"><button class="btn sm" onclick="repairForm('${c.id}','${r.id}')">✏</button><button class="btn sm danger" onclick="delRepair('${c.id}','${r.id}')">🗑</button></div></td></tr>`).join('');
+  const total=repTotal(c);
+  const body=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="btn primary sm" onclick="repairForm('${c.id}')">+ Tambah Perbaikan</button>
+      <div style="flex:1"></div><span class="mini">Total perbaikan mobil ini:</span> <b style="color:var(--pink)">${rp(total)}</b></div>
+    <div class="tablewrap" style="border:none"><table><thead><tr><th>Tanggal</th><th>Untuk apa</th><th class="num">Biaya barang</th><th class="num">Ongkos</th><th class="num">Total</th><th>Dikerjakan oleh</th><th></th></tr></thead>
+    <tbody>${rows||'<tr><td colspan="7"><div class="empty"><div class="big">🔧</div>Belum ada perbaikan.<br><span class="mini">Catat servis, ganti part, salon, wiper, dsb.</span></div></td></tr>'}
+    ${c.repairs.length?`<tr style="font-weight:800;background:var(--panel2)"><td colspan="4">TOTAL</td><td class="num" style="color:var(--pink)">${rp(total)}</td><td colspan="2"></td></tr>`:''}</tbody></table></div>
+    <div class="mini" style="margin-top:10px">💡 Total perbaikan otomatis mengurangi laba mobil.</div>`;
+  openModal('🔧 Perbaikan — '+esc(c.nama)+' '+esc(c.type||''),body,()=>{ closeModal(); pageMobil(); },'Selesai');
+}
+function repairForm(carId,repId){
+  const c=DB.cars.find(x=>x.id===carId); if(!c)return; c.repairs=c.repairs||[];
+  const r=repId?c.repairs.find(x=>x.id===repId):null;
+  formModal(repId?'Edit Perbaikan':'Tambah Perbaikan',[
+    {k:'tanggal',label:'Tanggal',type:'date'},
+    {k:'untuk',label:'Untuk apa (jenis perbaikan)',required:true,width:'sp2'},
+    {k:'biaya',label:'Biaya barang/part',type:'money'},
+    {k:'ongkos',label:'Ongkos (jasa)',type:'money'},
+    {k:'oleh',label:'Siapa yang dikerjakan'}
+  ],r||{tanggal:todayISO()},out=>{
+    if(r)Object.assign(r,out); else{ out.id=uid('r'); c.repairs.push(out); }
+    save(); pageMobil(); renderRepairs(); toast('Perbaikan disimpan ✓'); return true;
+  });
+}
+function delRepair(carId,repId){ const c=DB.cars.find(x=>x.id===carId); if(!c)return; if(!confirmBox('Hapus catatan perbaikan ini?'))return; c.repairs=(c.repairs||[]).filter(x=>x.id!==repId); save(); pageMobil(); renderRepairs(); toast('Perbaikan dihapus'); }
+function periodeForm(){
+  syncCalendarPeriods(); selPeriode=periodFromDate(todayISO()); save(); route(); toast('Periode mengikuti bulan kalender: '+selPeriode);
+}
+
+/* ================= INVESTOR ================= */
+function pageInvestor(){
+  setActions(`<button class="btn primary" onclick="investorForm()">+ Investor</button>`);
+  const own=ownerStats();
+  const modalInv=modalInvestor();
+  const totalEarnedInv=DB.investors.reduce((s,i)=>s+invStats(i.id).share,0);
+  const totalPaid=DB.investors.reduce((s,i)=>s+invProfit(i.id),0);
+  const outstanding=Math.max(0,totalEarnedInv-totalPaid);
+  const cards=DB.investors.map(i=>{ const s=invStats(i.id), payout=invPayout(i.id), cash=invCashStats(i.id), danaDiam=cash.saldo+payout.modalDue, modalSaldo=invPrincipalOutstanding(i.id)+cash.saldo, dapatDiambil=invWithdrawable(i.id);
+    return `<div class="panel">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div class="avatar" style="background:${colorFor(i.nama)}">${initials(i.nama)}</div>
+        <div style="min-width:0"><b style="font-size:15px">${esc(i.nama)}</b><div class="mini">${esc(i.telp||'—')}</div></div>
+        <div style="flex:1"></div><button class="btn sm" onclick="investorForm('${i.id}')">✏</button></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 8px;margin-bottom:12px">
+        <div><div class="mini">Modal di mobil</div><b>${rp(s.modalTied)}</b><div class="mini">${s.stok.length} mobil stok</div></div>
+        <div><div class="mini">Dana diam investor</div><b>${rp(danaDiam)}</b><div class="mini">di luar mobil ${rpShort(cash.saldo)} + belum kembali ${rpShort(payout.modalDue)}</div></div>
+        <div><div class="mini">Saldo modal investor</div><b class="${modalSaldo>0?'neg':'pos'}">${rp(modalSaldo)}</b></div>
+        <div><div class="mini">Hasil belum dibayar</div><b>${rp(payout.hasilDue)}</b></div>
+        <div><div class="mini">Total harus dibayar</div><b class="${payout.totalDue>0?'neg':'pos'}">${rp(payout.totalDue)}</b></div>
+        <div><div class="mini">Sudah dikembalikan</div><b>${rp(payout.modalPaid+payout.hasilPaid)}</b></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm" onclick="investorMoneyForm('${i.id}','setor')">+ Uang Masuk</button>
+        <button class="btn sm" onclick="investorMoneyForm('${i.id}','tarik')"${dapatDiambil<=0?' disabled':''}>− Ambil Uang</button>
+        <button class="btn sm" style="flex:1" onclick="payInvestor('${i.id}')"${payout.totalDue<=0?' disabled':''}>${payout.totalDue>0?'💵 Kembalikan Modal + Hasil':'Belum ada yang dikembalikan'}</button>
+        <button class="btn sm danger icon" onclick="delInvestor('${i.id}')">🗑</button></div>
+    </div>`;}).join('');
+  const totalModalAll=own.modal+modalInv;
+  V(`
+  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(175px,1fr))">
+    <div class="kpi a"><div class="lab">👑 Modal Owner</div><div class="val">${rpShort(own.modal)}</div><div class="hint">sisa uang ${rpShort(own.sisaUang)}</div></div>
+    <div class="kpi v"><div class="lab">Modal Investor</div><div class="val">${rpShort(modalInv)}</div><div class="hint">di mobil + belum dikembalikan</div></div>
+    <div class="kpi"><div class="lab">Total Modal</div><div class="val">${rpShort(totalModalAll)}</div><div class="hint">owner + investor</div></div>
+    <div class="kpi p"><div class="lab">Uang di Mobil (stok)</div><div class="val">${rpShort(uangDiMobil())}</div><div class="hint">modal sedang berputar</div></div>
+  </div>
+  <div class="panel" style="margin-bottom:18px">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px">
+      <div class="avatar" style="width:46px;height:46px;background:linear-gradient(135deg,#f59e0b,#f472b6);font-size:22px">👑</div>
+      <div><b style="font-size:16px">${esc(ownerName())} <span class="muted" style="font-size:12px">(Owner)</span></b><div class="mini">Sisa uang = modal owner − bagian owner pada seluruh mobil stok.</div></div>
+      <div style="flex:1"></div>
+      <button class="btn sm" onclick="editModalOwner()">✏ Ubah Modal Owner</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px">
+      <div><div class="mini">Modal Owner</div><b style="font-size:17px">${rp(own.modal)}</b></div>
+      <div><div class="mini">Uang owner di mobil</div><b style="font-size:17px">${rp(own.modalTied)}</b><div class="mini">${own.stok.length} mobil stok</div></div>
+      <div><div class="mini">Sisa uang owner</div><b style="font-size:17px;color:var(--green)">${rp(own.sisaUang)}</b></div>
+      <div><div class="mini">Total keuntungan owner</div><b style="font-size:17px" class="pos">${rp(own.totalEarn)}</b><div class="mini">mobil sendiri ${rpShort(own.labaOwn)} + dari investor ${rpShort(own.shareFromInv)}</div></div>
+    </div>
+  </div>
+  ${DB.investors.length?`<div class="grid3">${cards}</div>`:`<div class="panel"><div class="empty"><div class="big">👥</div>Belum ada investor.<br><span class="mini">Tambahkan pemodal, lalu di setiap mobil pilih <b>"Modal dari"</b> investor tersebut. Laba mobil itu otomatis dibagi antara owner &amp; investor sesuai persen.</span><br><button class="btn primary" style="margin-top:14px" onclick="investorForm()">+ Tambah Investor Pertama</button></div></div>`}`);
+}
+function editModalOwner(){
+  formModal('👑 Modal Owner',[
+    {k:'modalOwner',label:'Total Modal Owner (Rp)',type:'money',width:'full'}
+  ],{modalOwner:N(DB.meta.modalOwner)},out=>{
+    DB.meta.modalOwner=N(out.modalOwner); save(); closeModal(); pageInvestor(); toast('Modal owner diperbarui ✓');
+  });
+}
+function investorForm(id){
+  const i=id?DB.investors.find(x=>x.id===id):null;
+  formModal(id?'Edit Investor':'Tambah Investor',[
+    {k:'nama',label:'Nama',required:true,width:'sp2'},{k:'telp',label:'No. HP'},
+    {k:'catatan',label:'Catatan (modalnya otomatis mengikuti mobil yang dia modali)',type:'textarea',width:'full'}
+  ],i||{},out=>{
+    if(i)Object.assign(i,out); else DB.investors.push(Object.assign({id:uid('i')},out));
+    save();closeModal();pageInvestor();toast('Investor disimpan ✓');
+  });
+}
+function investorMoneyForm(id,tipe){
+  const cash=invCashStats(id),payout=invPayout(id),principal=invPrincipalOutstanding(id),tersedia=invWithdrawable(id),tarik=tipe==='tarik';
+  if(tarik&&tersedia<=0){toast('Belum ada uang investor yang dapat diambil');return;}
+  formModal((tarik?'− Ambil Uang — ':'+ Uang Masuk — ')+invName(id),[
+    {k:'tanggal',label:'Tanggal',type:'date'},
+    {k:'jumlah',label:tarik?'Jumlah diambil (maks. '+rp(tersedia)+')':'Jumlah uang masuk',type:'money',required:true},
+    {k:'metodeBayar',label:'Metode',type:'select',opts:[{v:'tunai',t:'Tunai'},{v:'transfer',t:'Transfer'}]},
+    {k:'ket',label:'Catatan',width:'sp2'}
+  ],{tanggal:todayISO(),jumlah:tarik?tersedia:'',metodeBayar:'tunai'},o=>{
+    const jumlah=N(o.jumlah); if(!jumlah){toast('Jumlah harus diisi',true);return false;}
+    if(tarik&&jumlah>tersedia){toast('Maksimal yang dapat diambil '+rp(tersedia),true);return false;}
+    let sisa=jumlah,danaLuar=0,modalKembali=0,hasil=0;
+    if(tarik){danaLuar=Math.min(sisa,cash.saldo);sisa-=danaLuar;modalKembali=Math.min(sisa,principal);sisa-=modalKembali;hasil=Math.min(sisa,payout.hasilDue);}
+    DB.capitalTx.push({id:uid('m'),investorId:id,tanggal:o.tanggal,tipe:tarik?'tarik':'setor',jumlah,metodeBayar:o.metodeBayar,danaLuar,modalKembali,hasil,ket:o.ket});
+    save();closeModal();pageInvestor();toast(tarik?'Uang investor diambil ✓':'Uang investor masuk ✓');
+  });
+}
+function delInvestor(id){ const i=DB.investors.find(x=>x.id===id); const n=DB.cars.filter(c=>c.pemodalId===id).length;
+  if(!confirmBox(`Hapus investor "${i.nama}"?`+(n?` ${n} mobil miliknya akan dialihkan ke modal owner.`:'')))return;
+  DB.cars.forEach(c=>{ if(c.pemodalId===id)c.pemodalId=''; }); DB.investors=DB.investors.filter(x=>x.id!==id); save(); pageInvestor(); toast('Investor dihapus'); }
+function payInvestor(id){
+  const payout=invPayout(id);
+  if(payout.totalDue<=0){toast('Belum ada modal atau laba yang dapat dikembalikan. Modal investor masih berada di mobil stok.');return;}
+  formModal('💵 Kembalikan Modal + Hasil — '+invName(id),[
+    {k:'tanggal',label:'Tanggal',type:'date'},
+    {k:'jenisKembali',label:'Pengembalian',type:'select',opts:[{v:'semua',t:'Kembalikan semua'},{v:'sebagian',t:'Kembalikan sebagian'}]},
+    {k:'jumlah',label:'Jumlah dikembalikan (maks. '+rp(payout.totalDue)+')',type:'money',readonly:true},
+    {k:'metodeBayar',label:'Metode pembayaran',type:'select',opts:[{v:'tunai',t:'Tunai'},{v:'transfer',t:'Transfer'}],width:'sp2'},
+    {k:'ket',label:'Catatan',width:'sp2'}
+  ],{tanggal:todayISO(),jenisKembali:'semua',jumlah:payout.totalDue,metodeBayar:'tunai'},o=>{
+    const jumlah=o.jenisKembali==='semua'?payout.totalDue:N(o.jumlah);
+    if(!jumlah){toast('Tidak ada modal atau laba yang dikembalikan',true);return false;}
+    if(jumlah>payout.totalDue){toast('Maksimal yang dapat dikembalikan '+rp(payout.totalDue),true);return false;}
+    const modal=Math.min(jumlah,payout.modalDue),hasil=jumlah-modal;
+    DB.distributions.push({id:uid('d'),periode:'',tanggal:o.tanggal,akun:'',metodeBayar:o.metodeBayar,jenisKembali:o.jenisKembali,items:[{investorId:id,jumlah,modalKembali:modal,hasil}],ket:o.ket});
+    save();closeModal();pageInvestor();toast('Modal + laba dikembalikan ✓');
+  });
+  const jenis=document.getElementById('ff_jenisKembali'),jumlah=document.getElementById('ff_jumlah');
+  const updateJumlah=()=>{ const sebagian=jenis.value==='sebagian'; jumlah.readOnly=!sebagian; jumlah.value=sebagian?'':payout.totalDue; _moneyHint('jumlah',1); if(sebagian)jumlah.focus(); };
+  jenis.addEventListener('change',updateJumlah);
+}
+
+/* ================= BAGI HASIL ================= */
+function pageBagiHasil(){
+  ensurePeriode();
+  setActions(`<select onchange="selPeriode=this.value;route()" style="width:auto">${periodeOptions(selPeriode)}</select>`);
+  const per=selPeriode;
+  const sold=periodStats(per).jual;
+  const labaTot=sold.reduce((s,c)=>s+N(c.laba),0);
+  const invTot=sold.reduce((s,c)=>s+carInvestorShare(c),0);
+  const ownTot=sold.reduce((s,c)=>s+carOwnerShare(c),0);
+  const modalTot=sold.reduce((s,c)=>s+N(c.hargaBeli),0);
+  const modalInvTot=sold.reduce((s,c)=>s+carInvestorCapital(c),0);
+  const modalOwnTot=sold.reduce((s,c)=>s+carOwnerCapital(c),0);
+  const zakatTot=sold.reduce((s,c)=>s+N(c.zakat),0);
+  const flows=investorFlows(),flowMasuk=flows.reduce((s,f)=>s+f.masuk,0),flowKeluar=flows.reduce((s,f)=>s+f.keluar,0);
+  V(`
+  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(165px,1fr))">
+    <div class="kpi g"><div class="lab">Laba ${esc(per)}</div><div class="val">${rpShort(labaTot)}</div><div class="hint">${sold.length} mobil terjual</div></div>
+    <div class="kpi a"><div class="lab">👑 Jatah Owner</div><div class="val">${rpShort(ownTot)}</div><div class="hint">${esc(ownerName())}</div></div>
+    <div class="kpi v"><div class="lab">Jatah Investor</div><div class="val">${rpShort(invTot)}</div><div class="hint">semua investor</div></div>
+    <div class="kpi p"><div class="lab">Zakat 2.5%</div><div class="val">${rpShort(zakatTot)}</div><div class="hint">sisihkan dulu</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>💰 Bagi Hasil per Mobil — ${esc(per)}</h3></div>
+    ${sold.length?`<div class="tablewrap" style="border:none"><table>
+      <thead><tr><th>Mobil</th><th>Pemodal</th><th class="num">Modal Mobil</th><th class="num">Modal Investor</th><th class="num">Modal Owner</th><th class="num">Laba</th><th class="num">Jatah Investor</th><th class="num">Jatah Owner</th></tr></thead>
+      <tbody>${sold.map(c=>`<tr>
+        <td><b>${esc(carTitle(c)||c.nama)}</b><div class="mini">${[c.tahun,c.warna].filter(Boolean).map(esc).join(' · ')}</div></td>
+        <td>${c.pemodalId?`<span class="pill stok">👤 ${esc(invName(c.pemodalId))} · ${carInvestorPct(c).toFixed(1)}%</span>`:`<span class="pill jual">👑 ${esc(ownerName())}</span>`}</td>
+        <td class="num">${rp(c.hargaBeli)}</td>
+        <td class="num">${carInvestorCapital(c)?rp(carInvestorCapital(c)):'<span class="muted">-</span>'}</td>
+        <td class="num">${rp(carOwnerCapital(c))}</td>
+        <td class="num pos">${rp(c.laba)}</td>
+        <td class="num">${carInvestorShare(c)?rp(carInvestorShare(c)):'<span class="muted">-</span>'}</td>
+        <td class="num" style="color:var(--amber)">${rp(carOwnerShare(c))}</td></tr>`).join('')}
+        <tr style="font-weight:800;background:var(--panel2)"><td colspan="2">TOTAL</td><td class="num">${rp(modalTot)}</td><td class="num">${rp(modalInvTot)}</td><td class="num">${rp(modalOwnTot)}</td><td class="num pos">${rp(labaTot)}</td><td class="num">${rp(invTot)}</td><td class="num" style="color:var(--amber)">${rp(ownTot)}</td></tr>
+      </tbody></table></div>
+      <div class="mini" style="margin-top:10px">💡 Tiap mobil dibagi menurut pemodalnya sendiri. Atur pemodal &amp; persen di form mobil (bagian "Pemodal &amp; Bagi Hasil").</div>`:'<div class="empty"><div class="big">💰</div>Belum ada mobil terjual di periode ini.</div>'}
+  </div>
+  <div class="panel" style="margin-top:18px">
+    <div class="panel-h"><h3>📊 Rekap Uang Masuk &amp; Keluar Investor — Semua Periode</h3></div>
+    ${flows.length?`<div class="tablewrap" style="border:none"><table>
+      <thead><tr><th>Tanggal</th><th>Investor</th><th>Transaksi</th><th>Mobil</th><th>Metode</th><th class="num">Uang Masuk</th><th class="num">Uang Keluar</th></tr></thead>
+      <tbody>${flows.map(f=>`<tr>
+        <td class="mini">${fmtDate(f.tanggal)}</td>
+        <td><b>${esc(invName(f.investorId))}</b></td>
+        <td>${esc(f.jenis)}${f.ket?`<div class="mini">${esc(f.ket)}</div>`:''}</td>
+        <td>${f.mobil?esc(f.mobil):'<span class="muted">-</span>'}</td>
+        <td>${f.metode?esc(f.metode==='tunai'?'Tunai':f.metode==='transfer'?'Transfer':f.metode):'<span class="muted">-</span>'}</td>
+        <td class="num pos">${f.masuk?rp(f.masuk):''}</td><td class="num neg">${f.keluar?rp(f.keluar):''}</td></tr>`).join('')}
+        <tr style="font-weight:800;background:var(--panel2)"><td colspan="5">TOTAL</td><td class="num pos">${rp(flowMasuk)}</td><td class="num neg">${rp(flowKeluar)}</td></tr>
+      </tbody></table></div>`:'<div class="empty">Belum ada arus uang investor.</div>'}
+  </div>`);
+}
+function delDist(id){ if(!confirmBox('Hapus catatan pembayaran ini?'))return; DB.distributions=DB.distributions.filter(d=>d.id!==id); save(); route(); toast('Dihapus'); }
+
+/* ================= MEDIATOR ================= */
+function pageMediator(){
+  const map={};
+  const add=(nama,field,val,c)=>{ nama=(nama||'').trim(); if(!nama)return; map[nama]=map[nama]||{nama,beliN:0,beliK:0,jualN:0,jualK:0,mobil:[]};
+    if(field==='beli'){map[nama].beliN++;map[nama].beliK+=N(val);}else{map[nama].jualN++;map[nama].jualK+=N(val);}
+    map[nama].mobil.push((c.nama||'')+' '+(c.type||'')+(field==='beli'?' (beli)':' (jual)')); };
+  DB.cars.forEach(c=>{ if(c.medBeli)add(c.medBeli,'beli',c.komisiBeli,c); if(c.medJual)add(c.medJual,'jual',c.komisiJual,c); });
+  const list=Object.values(map).sort((a,b)=>(b.beliK+b.jualK)-(a.beliK+a.jualK));
+  const totBeliK=list.reduce((s,m)=>s+m.beliK,0), totJualK=list.reduce((s,m)=>s+m.jualK,0);
+  V(`
+  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+    <div class="kpi"><div class="lab">Jumlah Mediator</div><div class="val">${list.length}</div><div class="hint">orang/pihak berbeda</div></div>
+    <div class="kpi a"><div class="lab">Komisi Mediator Beli</div><div class="val">${rpShort(totBeliK)}</div><div class="hint">saat pembelian mobil</div></div>
+    <div class="kpi g"><div class="lab">Komisi Mediator Jual</div><div class="val">${rpShort(totJualK)}</div><div class="hint">saat penjualan mobil</div></div>
+    <div class="kpi v"><div class="lab">Total Komisi</div><div class="val">${rpShort(totBeliK+totJualK)}</div><div class="hint">beli + jual</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>🤝 Rekap Mediator</h3><div class="spacer"></div><span class="mini">Mediator beli &amp; jual dipisah — diambil otomatis dari data mobil.</span></div>
+    ${list.length?`<div class="tablewrap" style="border:none"><table>
+      <thead><tr><th>Mediator</th><th class="num">Transaksi Beli</th><th class="num">Komisi Beli</th><th class="num">Transaksi Jual</th><th class="num">Komisi Jual</th><th class="num">Total Komisi</th></tr></thead>
+      <tbody>${list.map(m=>`<tr title="${esc(m.mobil.join(', '))}">
+        <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar" style="width:30px;height:30px;font-size:11px;background:${colorFor(m.nama)}">${initials(m.nama)}</div>${esc(m.nama)}</div></td>
+        <td class="num">${m.beliN||'<span class="muted">-</span>'}</td><td class="num">${m.beliK?rp(m.beliK):'<span class="muted">-</span>'}</td>
+        <td class="num">${m.jualN||'<span class="muted">-</span>'}</td><td class="num">${m.jualK?rp(m.jualK):'<span class="muted">-</span>'}</td>
+        <td class="num"><b>${rp(m.beliK+m.jualK)}</b></td></tr>`).join('')}
+        <tr style="font-weight:800;background:var(--panel2)"><td>TOTAL</td><td></td><td class="num">${rp(totBeliK)}</td><td></td><td class="num">${rp(totJualK)}</td><td class="num">${rp(totBeliK+totJualK)}</td></tr>
+      </tbody></table></div>`
+      :'<div class="empty"><div class="big">🤝</div>Belum ada mediator.<br><span class="mini">Isi kolom <b>Mediator Beli</b> &amp; <b>Mediator Jual</b> saat menambah mobil.</span></div>'}
+  </div>`);
+}
+
+/* ================= LAPORAN ================= */
+function pageLaporan(){
+  ensurePeriode();
+  setActions(`<select onchange="selPeriode=this.value;route()" style="width:auto">${periodeOptions(selPeriode)}</select><button class="btn primary" onclick="window.print()">🖨 Cetak / PDF</button>`);
+  const per=selPeriode,st=periodStats(per);
+  const invTot=st.jual.reduce((s,c)=>s+carInvestorShare(c),0), ownTot=st.jual.reduce((s,c)=>s+carOwnerShare(c),0);
+  const rowsStok=st.unsold.map((c,i)=>`<tr><td>${i+1}</td><td>${esc(carTitle(c))}</td><td>${esc(c.tahun||'')}</td><td>${c.pemodalId?esc(invName(c.pemodalId)):'👑 '+esc(ownerName())}</td><td class="num">${rp(c.hargaBeli)}</td><td>${esc(c.medBeli||'')}</td></tr>`).join('');
+  const rowsJual=st.jual.map((c,i)=>`<tr><td>${i+1}</td><td>${esc(carTitle(c))}</td><td>${c.pemodalId?esc(invName(c.pemodalId))+' '+carInvestorPct(c).toFixed(1)+'%':'👑 '+esc(ownerName())}</td><td class="num">${rp(c.hargaBeli)}</td><td class="num">${rp(saleValue(c))}</td><td class="num pos">${rp(c.laba)}</td><td class="num" style="color:var(--amber)">${rp(carOwnerShare(c))}</td><td class="num">${rp(carInvestorShare(c))}</td></tr>`).join('');
+  const report=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+      <div><h2 style="margin:0">${esc(DB.meta.bisnis||'MobilKu')}</h2><div class="mini">Laporan Periode ${esc(per)}</div></div>
+      <div class="mini">Dicetak: ${fmtDate(todayISO())}</div>
+    </div>
+    <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div class="kpi"><div class="lab">Stok Akhir Bulan</div><div class="val">${st.unsold.length} unit</div><div class="hint">${rp(st.modalStok)} • dibawa ke bulan berikutnya</div></div>
+      <div class="kpi g"><div class="lab">Terjual</div><div class="val">${st.jual.length} unit</div><div class="hint">Omzet ${rpShort(st.omzet)}</div></div>
+      <div class="kpi"><div class="lab">Laba Bersih</div><div class="val" style="color:var(--green)">${rp(st.laba)}</div></div>
+      <div class="kpi v"><div class="lab">Zakat 2.5%</div><div class="val">${rp(st.zakat)}</div></div>
+      <div class="kpi p"><div class="lab">Biaya Perbaikan</div><div class="val">${rp(st.perbaikan)}</div></div>
+      <div class="kpi a"><div class="lab">👑 Jatah Owner</div><div class="val">${rpShort(ownTot)}</div></div>
+      <div class="kpi v"><div class="lab">Jatah Investor</div><div class="val">${rpShort(invTot)}</div></div>
+    </div>
+    <div class="panel" style="margin-bottom:16px"><div class="panel-h"><h3>Mobil Terjual</h3></div>
+      <div class="tablewrap" style="border:none"><table><thead><tr><th>No</th><th>Mobil</th><th>Modal dari</th><th class="num">Beli</th><th class="num">Jual</th><th class="num">Laba</th><th class="num">Owner</th><th class="num">Investor</th></tr></thead>
+      <tbody>${rowsJual||'<tr><td colspan="8" class="muted" style="text-align:center;padding:20px">Belum ada penjualan</td></tr>'}
+      ${st.jual.length?`<tr style="font-weight:800;background:var(--panel2)"><td colspan="5">TOTAL LABA ${rp(st.laba)}</td><td class="num pos">${rp(st.laba)}</td><td class="num" style="color:var(--amber)">${rp(ownTot)}</td><td class="num">${rp(invTot)}</td></tr>`:''}</tbody></table></div></div>
+    <div class="panel"><div class="panel-h"><h3>Stok Akhir Bulan — Dibawa ke Bulan Berikutnya</h3></div>
+      <div class="tablewrap" style="border:none"><table><thead><tr><th>No</th><th>Mobil</th><th>Thn</th><th>Modal dari</th><th class="num">Harga Beli</th><th>Mediator</th></tr></thead>
+      <tbody>${rowsStok||'<tr><td colspan="6" class="muted" style="text-align:center;padding:20px">Tidak ada stok</td></tr>'}
+      ${st.unsold.length?`<tr style="font-weight:800;background:var(--panel2)"><td colspan="4">TOTAL ${st.unsold.length} MOBIL / MODAL STOK</td><td class="num">${rp(st.modalStok)}</td><td></td></tr>`:''}</tbody></table></div></div>`;
+  V(report);
+  document.getElementById('printArea').innerHTML=report;
+}
+
+/* ================= PENGATURAN ================= */
+function pagePengaturan(){
+  V(`
+  <div class="grid2">
+    <div class="panel"><div class="panel-h"><h3>🏢 Profil Bisnis</h3></div>
+      <label>Nama Bisnis</label><input id="setBisnis" value="${esc(DB.meta.bisnis||'')}" oninput="DB.meta.bisnis=this.value;document.getElementById('brandName').textContent=this.value||'MobilKu';save()">
+      <label style="margin-top:14px">Nama Owner (Anda)</label><input id="setOwner" value="${esc(DB.meta.ownerName||'Owner')}" oninput="DB.meta.ownerName=this.value||'Owner';save()">
+      <label style="margin-top:14px">Persentase Zakat (%)</label><input id="setZakat" inputmode="decimal" value="${DB.meta.zakatRate}" oninput="DB.meta.zakatRate=N(this.value)||2.5;save()">
+      <label style="margin-top:14px">Tema</label>
+      <div class="seg" style="margin-top:4px"><button class="${DB.meta.theme==='dark'?'active':''}" onclick="DB.meta.theme='dark';document.documentElement.setAttribute('data-theme','dark');save();pagePengaturan()">🌙 Gelap</button>
+      <button class="${DB.meta.theme==='light'?'active':''}" onclick="DB.meta.theme='light';document.documentElement.setAttribute('data-theme','light');save();pagePengaturan()">☀️ Terang</button></div>
+    </div>
+    <div class="panel"><div class="panel-h"><h3>💾 Data & Cadangan</h3></div>
+      <p class="mini">Semua data tersimpan di perangkat & browser ini. <b>Rutin backup</b> agar aman bila browser dibersihkan atau ganti perangkat.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+        <button class="btn" onclick="doBackup()">💾 Backup (unduh file .json)</button>
+        <button class="btn" onclick="document.getElementById('restoreInput').click()">📂 Restore dari backup</button>
+        <input type="file" id="restoreInput" accept=".json" style="display:none" onchange="doRestore(event)">
+        <button class="btn" onclick="exportCSV()">⬇ Export data mobil ke CSV (Excel)</button>
+      </div>
+      <div style="margin-top:18px;border-top:1px dashed var(--line);padding-top:14px">
+        <button class="btn danger" onclick="resetAll()">🗑 Hapus Semua Data</button>
+        <div class="mini" style="margin-top:6px">Menghapus seluruh data & mengembalikan ke awal. Tidak bisa dibatalkan.</div>
+      </div>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:18px"><div class="panel-h"><h3>ℹ️ Ringkasan Data</h3></div>
+    <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin:0">
+      <div class="kpi"><div class="lab">Mobil</div><div class="val">${DB.cars.length}</div></div>
+      <div class="kpi"><div class="lab">Periode</div><div class="val">${DB.periodes.length}</div></div>
+      <div class="kpi"><div class="lab">Investor</div><div class="val">${DB.investors.length}</div></div>
+    </div>
+  </div>`);
+}
+function doBackup(){ const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}); dl(blob,'Backup MobilKu '+todayISO()+'.json'); toast('Backup terunduh ✓'); }
+function doRestore(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); if(!d.cars&&!d.periodes)throw 0; if(!confirmBox('Ganti SEMUA data saat ini dengan isi backup?'))return; DB=d; const b=blankDB(); for(const k in b)if(DB[k]==null)DB[k]=b[k]; save(); document.documentElement.setAttribute('data-theme',DB.meta.theme||'dark'); route(); toast('Data dipulihkan ✓'); }catch(err){ toast('File backup tidak valid',true); } }; r.readAsText(f); e.target.value=''; }
+function resetAll(){ if(!confirmBox('Yakin hapus SEMUA data? Tindakan ini permanen.'))return; if(!confirmBox('Sekali lagi: semua mobil, investor, kas akan hilang. Lanjut?'))return; localStorage.removeItem(KEY); localStorage.removeItem(OLDKEY); load(); route(); toast('Data direset'); }
+function exportCSV(){
+  const rows=periodStats(selPeriode).cars;
+  const head=['No','Produk','Nama','Tipe','AT/MT','Tahun','Warna','No Polisi','No Rangka','No Mesin','Status','Tgl Beli','Harga Beli','Komisi Beli','Mediator Beli','Lokasi','Pembeli','Alamat','Tgl Jual','Harga Jual','Terima Leasing','Komisi Jual','Mediator Jual','Laba','Zakat','Keterangan'];
+  const line=a=>a.map(v=>{v=v==null?'':String(v);return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(';');
+  const csv='﻿'+line(head)+'\n'+rows.map(c=>line([c.no,c.produk,c.nama,c.type,c.transmisi,c.tahun,c.warna,c.noPolisi,c.noRangka,c.noMesin,STATUSLABEL[carStatusInPeriod(c,selPeriode)],c.tglBeli,c.hargaBeli,c.komisiBeli,c.medBeli,c.lokasi,c.pembeli,c.alamat,carSaleDate(c),c.hargaJual,c.jualLeasing,c.komisiJual,c.medJual,c.laba,c.zakat,c.ket])).join('\n');
+  dl(new Blob([csv],{type:'text/csv;charset=utf-8'}),'Data Mobil '+selPeriode+'.csv'); toast('CSV siap (buka di Excel) ✓');
+}
+function dl(blob,name){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); }
+
+/* ================= INIT ================= */
+load();
+syncCalendarPeriods();
+save();
+document.documentElement.setAttribute('data-theme',DB.meta.theme||'dark');
+document.getElementById('brandName').textContent=DB.meta.bisnis||'MobilKu';
+buildNav();
+window.addEventListener('hashchange',route);
+route();
+</script>
+</body>
+</html>
