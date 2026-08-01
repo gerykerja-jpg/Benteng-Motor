@@ -1,0 +1,23 @@
+{
+  "id": "./app.html",
+  "name": "Benteng Motor – MobilKu",
+  "short_name": "Benteng Motor",
+  "description": "Aplikasi manajemen jual-beli mobil Benteng Motor.",
+  "lang": "id-ID",
+  "start_url": "./app.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0b1220",
+  "theme_color": "#0ea5e9",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
